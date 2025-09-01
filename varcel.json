@@ -1,12 +1,11 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "api/redirect.go",
-      "use": "@vercel/go"
-    }
+    { "src": "api/redirect.go", "use": "@vercel/go" },
+    { "src": "api/logs.go", "use": "@vercel/go" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "api/redirect.go" }
+    { "src": "/$", "dest": "api/redirect.go" },
+    { "src": "/logs", "dest": "api/logs.go" }
   ]
 }

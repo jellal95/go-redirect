@@ -167,6 +167,10 @@ func main() {
 		return c.JSON(logs)
 	})
 
-	log.Println("Server running on :8080")
-	app.Listen(":8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Println("Server running on :" + port)
+	app.Listen(":" + port)
 }

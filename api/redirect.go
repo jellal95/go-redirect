@@ -63,7 +63,7 @@ func getGeo(ipStr string, db *geoip2.Reader) GeoInfo {
 // Main handler (redirect)
 func Handler(w http.ResponseWriter, r *http.Request) {
 	// load config
-	data, err := os.ReadFile("config/links.json")
+	data, err := os.ReadFile("api/../config/links.json")
 	if err != nil {
 		http.Error(w, "Config error", 500)
 		return

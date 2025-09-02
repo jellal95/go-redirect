@@ -135,7 +135,7 @@ func RedirectHandler(c *fiber.Ctx) error {
 
 	// Tulis ke file
 	logData, _ := json.Marshal(entry)
-	logFile.WriteString(string(logData) + "\n")
+	log.Println(string(logData))
 
 	// Redirect
 	return c.Redirect(selected.URL, 302)

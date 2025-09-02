@@ -1,4 +1,4 @@
-package mainps
+package main
 
 import (
 	"encoding/json"

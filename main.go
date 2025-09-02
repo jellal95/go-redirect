@@ -15,11 +15,13 @@ func main() {
 	app := fiber.New()
 
 	// Load config
-	products, err := utils.LoadProducts("config/links.json")
+	cfg, err := utils.LoadConfig("config/config.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
-	handlers.Products = products
+
+	handlers.Products = cfg.Products
+	handlers.PropAdsConfig = cfg.PropAds
 
 	// Init Geo
 	if err := geo.InitGeoDB("GeoLite2-City.mmdb"); err != nil {

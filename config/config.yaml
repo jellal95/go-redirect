@@ -1,0 +1,12 @@
+propellerAds:
+  aid: "YOUR_AID"
+  tid: "YOUR_TID"
+  postback_url: "http://ad.propellerads.com/conversion.php"
+
+products:
+  - url: "https://tk.tokopedia.com/ZSAp1LV3f/"
+    percentage: 50
+  - url: "https://tk.tokopedia.com/ZSAgocLbE/"
+    percentage: 30
+  - url: "https://tk.tokopedia.com/ZSAp1yytQ/"
+    percentage: 20

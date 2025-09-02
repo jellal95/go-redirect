@@ -4,6 +4,7 @@ go 1.24
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.9
+	github.com/mssola/user_agent v0.6.0
 	github.com/oschwald/geoip2-golang v1.13.0
 )
 

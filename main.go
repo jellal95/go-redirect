@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/mssola/user_agent"
 	"github.com/oschwald/geoip2-golang"
 )
 
@@ -19,19 +20,27 @@ type Product struct {
 }
 
 type GeoInfo struct {
-	Country string `json:"country"`
-	Region  string `json:"region"`
-	City    string `json:"city"`
+	Country   string  `json:"country"`
+	Region    string  `json:"region"`
+	City      string  `json:"city"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+	Timezone  string  `json:"timezone"`
 }
 
 type LogEntry struct {
-	Timestamp string  `json:"timestamp"`
-	URL       string  `json:"url"`
-	IP        string  `json:"ip"`
-	UserAgent string  `json:"user_agent"`
-	Referer   string  `json:"referer"`
-	Query     string  `json:"query"`
-	Geo       GeoInfo `json:"geo"`
+	Timestamp   string            `json:"timestamp"`
+	URL         string            `json:"url"`
+	IP          string            `json:"ip"`
+	UserAgent   string            `json:"user_agent"`
+	Browser     string            `json:"browser"`
+	OS          string            `json:"os"`
+	Device      string            `json:"device"`
+	Referer     string            `json:"referer"`
+	QueryRaw    string            `json:"query_raw"`
+	QueryParams map[string]string `json:"query_params"`
+	Headers     map[string]string `json:"headers"`
+	Geo         GeoInfo           `json:"geo"`
 }
 
 var products []Product
@@ -96,13 +105,11 @@ func RedirectHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendString("No product available")
 	}
 
-	// Hitung total percentage
+	// Weighted random
 	total := 0.0
 	for _, p := range products {
 		total += p.Percentage
 	}
-
-	// Random weighted
 	r := rand.Float64() * total
 	sum := 0.0
 	var selected *Product
@@ -117,27 +124,64 @@ func RedirectHandler(c *fiber.Ctx) error {
 		selected = &products[len(products)-1]
 	}
 
-	// Geo info
-	geo := GetGeoInfo(c.IP())
+	// === GEO INFO ===
+	geo := GeoInfo{}
+	ip := c.IP()
+	if geoDB != nil {
+		record, err := geoDB.City(net.ParseIP(ip))
+		if err == nil {
+			geo.Country = record.Country.Names["en"]
+			if len(record.Subdivisions) > 0 {
+				geo.Region = record.Subdivisions[0].Names["en"]
+			}
+			geo.City = record.City.Names["en"]
+			geo.Latitude = record.Location.Latitude
+			geo.Longitude = record.Location.Longitude
+			geo.Timezone = record.Location.TimeZone
+		}
+	}
 
-	// Simpan log di memory & file
+	// === USER AGENT PARSE ===
+	ua := user_agent.New(c.Get("User-Agent"))
+	browser, _ := ua.Browser()
+	osName := ua.OS()
+	device := "Desktop"
+	if ua.Mobile() {
+		device = "Mobile"
+	}
+
+	// === HEADERS ===
+	headers := map[string]string{}
+	c.Request().Header.VisitAll(func(k, v []byte) {
+		headers[string(k)] = string(v)
+	})
+
+	// === QUERY PARAMS ===
+	queryParams := map[string]string{}
+	c.Request().URI().QueryArgs().VisitAll(func(k, v []byte) {
+		queryParams[string(k)] = string(v)
+	})
+
+	// === LOG ENTRY ===
 	entry := LogEntry{
-		Timestamp: time.Now().Format(time.RFC3339),
-		URL:       selected.URL,
-		IP:        c.IP(),
-		UserAgent: c.Get("User-Agent"),
-		Referer:   c.Get("Referer"),
-		Query:     c.Context().QueryArgs().String(),
-		Geo:       geo,
+		Timestamp:   time.Now().Format(time.RFC3339),
+		URL:         selected.URL,
+		IP:          ip,
+		UserAgent:   c.Get("User-Agent"),
+		Browser:     browser,
+		OS:          osName,
+		Device:      device,
+		Referer:     c.Get("Referer"),
+		QueryRaw:    c.Context().QueryArgs().String(),
+		QueryParams: queryParams,
+		Headers:     headers,
+		Geo:         geo,
 	}
 
 	logs = append(logs, entry)
-
-	// Tulis ke file
 	logData, _ := json.Marshal(entry)
 	log.Println(string(logData))
 
-	// Redirect
 	return c.Redirect(selected.URL, 302)
 }
 

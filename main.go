@@ -150,9 +150,11 @@ func main() {
 	}
 
 	// Init log
-	if err := InitLog("logs/clicks.log"); err != nil {
-		log.Fatal(err)
-	}
+	/*
+		if err := InitLog("logs/clicks.log"); err != nil {
+			log.Fatal(err)
+		}
+	*/
 
 	// Init GeoIP DB
 	if err := InitGeoDB("GeoLite2-City.mmdb"); err != nil {

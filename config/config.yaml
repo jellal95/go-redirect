@@ -4,12 +4,18 @@ propellerAds:
   postback_url: "http://ad.propellerads.com/conversion.php"
 
 products:
-  - name: "EIGER CPS"
-    url: "https://atid.me/004v1L0021t5"
+  - id: 1
+    name: "EIGER"
+    url: "https://atid.me/go/DOEFt9xt"
+    percentage: 6
+    image: "https://www.eigeradventure.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flogo_white.a06ea6bc.webp&w=96&q=100"
+  - id: 2
+    name: "Blibli"
+    url: "https://atid.me/go/3uRpXt00"
+    percentage: 4.8
+    image: "https://www.static-src.com/siva/asset/09_2025/Lb_Tgl4_September_2025_Desktop.gif"
+  - id: 2
+    name: "AXA Mandiri"
+    url: "https://atid.me/go/MmadBUbc"
     percentage: 10
-  - name: "Blibli CPS"
-    url: "https://atid.me/00dh9j0021t5"
-    percentage: 10
-  - name: "AXA Mandiri MPPT (Mandiri Proteksi Penyakit Tropis) - CPS"
-    url: "https://atid.me/001ih50021t5"
-    percentage: 10
+    image: "https://axa-mandiri.co.id/image/layout_set_logo?img_id=39010002&t=1756926284720"

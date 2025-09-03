@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"math/rand/v2"
-	"net/url"
 	"strings"
 	"time"
 
@@ -20,30 +19,32 @@ var Products []models.Product
 var Logs []models.LogEntry
 
 func RedirectHandler(c *fiber.Ctx) error {
-	if len(Products) == 0 {
-		return c.Status(fiber.StatusNotFound).SendString("No product available")
+	if productID := c.Query("product"); productID != "" {
+		for _, p := range Products {
+			if p.ID == productID {
+				return doRedirect(c, p)
+			}
+		}
 	}
 
-	// weighted random
 	total := 0.0
 	for _, p := range Products {
 		total += p.Percentage
 	}
 	r := rand.Float64() * total
 	sum := 0.0
-	var selected *models.Product
 	for _, p := range Products {
 		sum += p.Percentage
 		if r <= sum {
-			selected = &p
-			break
+			return doRedirect(c, p)
 		}
 	}
-	if selected == nil {
-		selected = &Products[len(Products)-1]
-	}
 
-	// Geo
+	return doRedirect(c, Products[len(Products)-1])
+}
+
+func doRedirect(c *fiber.Ctx, product models.Product) error {
+	// --- IP & Geo ---
 	ip := c.Get("X-Forwarded-For")
 	if ip == "" {
 		ip = c.Get("X-Real-Ip")
@@ -51,10 +52,9 @@ func RedirectHandler(c *fiber.Ctx) error {
 	if ip == "" {
 		ip = c.IP()
 	}
-
 	geoInfo := geo.GetGeoInfo(ip)
 
-	// User Agent parsing
+	// --- User Agent ---
 	ua := user_agent.New(c.Get("User-Agent"))
 	browser, _ := ua.Browser()
 	osName := ua.OS()
@@ -63,53 +63,56 @@ func RedirectHandler(c *fiber.Ctx) error {
 		device = "Mobile"
 	}
 
-	// Headers
-	headers := map[string]string{}
+	// --- Headers ---
+	headers := make(map[string]string)
 	c.Request().Header.VisitAll(func(k, v []byte) {
 		headers[string(k)] = string(v)
 	})
 
-	// Query Params
-	queryParams := map[string]string{}
+	// --- Query Params (all) ---
+	queryParams := make(map[string]string)
+	filteredParams := []string{}
 	c.Request().URI().QueryArgs().VisitAll(func(k, v []byte) {
-		queryParams[string(k)] = string(v)
+		key := string(k)
+		val := string(v)
+		queryParams[key] = val
+		if key != "product" { // jangan ikutkan product ke merchant
+			filteredParams = append(filteredParams, fmt.Sprintf("%s=%s", key, val))
+		}
 	})
 
+	// --- Build final URL ---
+	finalURL := product.URL
+	if len(filteredParams) > 0 {
+		sep := "?"
+		if strings.Contains(finalURL, "?") {
+			sep = "&"
+		}
+		finalURL = finalURL + sep + strings.Join(filteredParams, "&")
+	}
+
+	// --- Logging ---
 	entry := models.LogEntry{
 		Timestamp:   time.Now().Format(time.RFC3339),
-		ProductName: selected.Name,
-		URL:         selected.URL,
-		IP:          c.IP(),
+		ProductName: product.Name,
+		URL:         finalURL,
+		IP:          ip,
 		UserAgent:   c.Get("User-Agent"),
 		Browser:     browser,
 		OS:          osName,
 		Device:      device,
 		Referer:     c.Get("Referer"),
-		QueryRaw:    c.Context().QueryArgs().String(),
+		QueryRaw:    string(c.Request().URI().QueryString()),
 		QueryParams: queryParams,
 		Headers:     headers,
 		Geo:         geoInfo,
 	}
 
 	Logs = append(Logs, entry)
-	logData, _ := json.Marshal(entry)
-	log.Println(string(logData))
-
-	u, _ := url.Parse(selected.URL)
-	if strings.Contains(u.Host, "atid.me") {
-		return c.SendString(fmt.Sprintf(`
-			<!DOCTYPE html>
-			<html>
-			  <head>
-			    <meta http-equiv="refresh" content="0;url=%s">
-			    <script>window.location.href="%s"</script>
-			  </head>
-			  <body>
-			    <p>Redirecting to <a href="%s">%s</a>...</p>
-			  </body>
-			</html>
-		`, selected.URL, selected.URL, selected.URL, selected.URL))
+	if data, err := json.Marshal(entry); err == nil {
+		log.Println(string(data))
 	}
 
-	return c.Redirect(selected.URL, 302)
+	// --- Redirect ke merchant ---
+	return c.Redirect(finalURL, 302)
 }

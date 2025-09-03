@@ -12,9 +12,11 @@ type PropAds struct {
 }
 
 type Product struct {
-	Name       string  `yaml:"name" json:"name"`
-	URL        string  `yaml:"url" json:"url"`
-	Percentage float64 `yaml:"percentage" json:"percentage"`
+	ID         string  `json:"id" yaml:"id"`
+	Name       string  `json:"name" yaml:"name"`
+	URL        string  `json:"url" yaml:"url"`
+	Image      string  `json:"image" yaml:"image"`
+	Percentage float64 `json:"percentage" yaml:"percentage"`
 }
 
 type GeoInfo struct {

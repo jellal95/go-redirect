@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Name}} – Promo Eksklusif</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", sans-serif;
+            height: 100vh;
+            background: url("https://img.freepik.com/free-photo/official-date-black-friday-start_23-2148313175.jpg?semt=ais_hybrid&w=740&q=80") no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5); /* semi-transparan gelap biar fokus ke card */
+        }
+
+        .card {
+            position: relative;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            z-index: 1;
+        }
+
+        .card img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        p {
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #ff5722;
+            color: #fff;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #e64a19;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                width: 90%;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.2rem;
+            }
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 24px;
+            background: linear-gradient(45deg, #ff5722, #ff9800);
+            color: #fff;
+            font-weight: bold;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 18px rgba(255, 87, 34, 0.5);
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 87, 34, 0.6);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(255, 87, 34, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 87, 34, 0);
+            }
+        }
+    </style>
+    <script>
+        // ambil semua query param yang masuk
+        const params = window.location.search;
+
+        // klik di mana saja → redirect ke /?product=ID + query param
+        document.addEventListener("click", function () {
+            window.location.href = "/?product={{.ID}}" + params;
+        });
+    </script>
+
+    <a class="btn" id="buyBtn">Beli Sekarang</a>
+    <script>
+        document.getElementById("buyBtn").addEventListener("click", function (e) {
+            e.preventDefault(); // cegah reload default <a>
+            window.location.href = "/?product={{.ID}}" + params;
+        });
+    </script>
+</head>
+<body>
+<div class="overlay"></div>
+<div class="card">
+    <img src="{{.Image}}" alt="{{.Name}}">
+    <h2>🔥 {{.Name}} Promo! 🔥</h2>
+    <p>Klik tombol atau di mana saja untuk lanjut & dapatkan penawaran terbaik sekarang juga!</p>
+    <a class="btn" href="/?product={{.ID}}">Beli Sekarang</a>
+</div>
+</body>
+</html>

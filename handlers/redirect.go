@@ -2,8 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
-	"math/rand"
+	"math/rand/v2"
+	"net/url"
+	"strings"
 	"time"
 
 	"go-redirect/geo"
@@ -17,8 +20,6 @@ var Products []models.Product
 var Logs []models.LogEntry
 
 func RedirectHandler(c *fiber.Ctx) error {
-	rand.Seed(time.Now().UnixNano())
-
 	if len(Products) == 0 {
 		return c.Status(fiber.StatusNotFound).SendString("No product available")
 	}
@@ -45,8 +46,12 @@ func RedirectHandler(c *fiber.Ctx) error {
 	// Geo
 	ip := c.Get("X-Forwarded-For")
 	if ip == "" {
+		ip = c.Get("X-Real-Ip")
+	}
+	if ip == "" {
 		ip = c.IP()
 	}
+
 	geoInfo := geo.GetGeoInfo(ip)
 
 	// User Agent parsing
@@ -89,6 +94,22 @@ func RedirectHandler(c *fiber.Ctx) error {
 	Logs = append(Logs, entry)
 	logData, _ := json.Marshal(entry)
 	log.Println(string(logData))
+
+	u, _ := url.Parse(selected.URL)
+	if strings.Contains(u.Host, "atid.me") {
+		return c.SendString(fmt.Sprintf(`
+			<!DOCTYPE html>
+			<html>
+			  <head>
+			    <meta http-equiv="refresh" content="0;url=%s">
+			    <script>window.location.href="%s"</script>
+			  </head>
+			  <body>
+			    <p>Redirecting to <a href="%s">%s</a>...</p>
+			  </body>
+			</html>
+		`, selected.URL, selected.URL, selected.URL, selected.URL))
+	}
 
 	return c.Redirect(selected.URL, 302)
 }

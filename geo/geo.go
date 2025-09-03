@@ -9,24 +9,22 @@ import (
 	"github.com/oschwald/geoip2-golang"
 )
 
-var GeoDB *geoip2.Reader
+var DB *geoip2.Reader
 
 func InitGeoDB(path string) error {
 	var err error
-	GeoDB, err = geoip2.Open(path)
+	DB, err = geoip2.Open(path)
 	return err
 }
 
-// ipStr = bisa IP asli atau dari X-Forwarded-For
 func GetGeoInfo(ipStr string) models.GeoInfo {
-	// ambil IP pertama kalau ada list (X-Forwarded-For bisa banyak dipisah koma)
 	if strings.Contains(ipStr, ",") {
 		parts := strings.Split(ipStr, ",")
 		ipStr = strings.TrimSpace(parts[0])
 	}
 
 	ip := net.ParseIP(ipStr)
-	if ip == nil || GeoDB == nil {
+	if ip == nil || DB == nil {
 		return models.GeoInfo{
 			Country:  "Unknown",
 			Region:   "Unknown",
@@ -35,7 +33,7 @@ func GetGeoInfo(ipStr string) models.GeoInfo {
 		}
 	}
 
-	record, err := GeoDB.City(ip)
+	record, err := DB.City(ip)
 	if err != nil {
 		return models.GeoInfo{
 			Country:  "Unknown",
@@ -55,5 +53,6 @@ func GetGeoInfo(ipStr string) models.GeoInfo {
 	if len(record.Subdivisions) > 0 {
 		geo.Region = record.Subdivisions[0].Names["en"]
 	}
+
 	return geo
 }

@@ -12,8 +12,9 @@ type PropAds struct {
 }
 
 type Product struct {
-	URL        string  `yaml:"url"`
-	Percentage float64 `yaml:"percentage"`
+	Name       string  `yaml:"name" json:"name"`
+	URL        string  `yaml:"url" json:"url"`
+	Percentage float64 `yaml:"percentage" json:"percentage"`
 }
 
 type GeoInfo struct {
@@ -27,6 +28,7 @@ type GeoInfo struct {
 
 type LogEntry struct {
 	Timestamp   string            `json:"timestamp"`
+	ProductName string            `json:"product_name"`
 	URL         string            `json:"url"`
 	IP          string            `json:"ip"`
 	UserAgent   string            `json:"user_agent"`

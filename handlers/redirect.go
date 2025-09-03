@@ -72,6 +72,7 @@ func RedirectHandler(c *fiber.Ctx) error {
 
 	entry := models.LogEntry{
 		Timestamp:   time.Now().Format(time.RFC3339),
+		ProductName: selected.Name,
 		URL:         selected.URL,
 		IP:          c.IP(),
 		UserAgent:   c.Get("User-Agent"),

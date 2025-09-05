@@ -14,8 +14,13 @@ products:
     url: "https://atid.me/go/3uRpXt00"
     percentage: 4.8
     image: "https://www.static-src.com/siva/asset/09_2025/Lb_Tgl4_September_2025_Desktop.gif"
-  - id: 2
+  - id: 3
     name: "AXA Mandiri"
     url: "https://atid.me/go/MmadBUbc"
     percentage: 10
     image: "https://axa-mandiri.co.id/image/layout_set_logo?img_id=39010002&t=1756926284720"
+  - id: 4
+    name: "Lazada"
+    url: "https://atid.me/go/WTvq2l3w"
+    percentage: 70
+    image: "https://img.lazcdn.com/g/tps/images/ims-web/TB1Hs8GaMFY.1VjSZFnXXcFHXXa.png"

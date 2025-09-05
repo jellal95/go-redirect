@@ -23,7 +23,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5); /* semi-transparan gelap biar fokus ke card */
+            background: rgba(0, 0, 0, 0.5);
         }
 
         .card {
@@ -112,22 +112,6 @@
             }
         }
     </style>
-    <script>
-        // ambil semua query param yang masuk
-        const params = window.location.search;
-
-        // klik di mana saja → redirect ke /?product=ID + query param
-        document.addEventListener("click", function () {
-            window.location.href = "/?product={{.ID}}" + params;
-        });
-    </script>
-
-    <script>
-        document.getElementById("buyBtn").addEventListener("click", function (e) {
-            e.preventDefault(); // cegah reload default <a>
-            window.location.href = "/?product={{.ID}}" + params;
-        });
-    </script>
 </head>
 <body>
 <div class="overlay"></div>
@@ -135,7 +119,36 @@
     <img src="{{.Image}}" alt="{{.Name}}">
     <h2>🔥 {{.Name}} Promo! 🔥</h2>
     <p>Klik tombol atau di mana saja untuk lanjut & dapatkan penawaran terbaik sekarang juga!</p>
-    <a class="btn" href="/?product={{.ID}}">Beli Sekarang</a>
+    <a id="buyBtn" class="btn" href="#">Beli Sekarang</a>
 </div>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const filteredParams = new URLSearchParams();
+
+    params.forEach((value, key) => {
+        if (key !== "product") {
+            filteredParams.append(key, value);
+        }
+    });
+
+    const queryString = filteredParams.toString();
+    const redirectUrl = queryString ? "/?product={{.ID}}&" + queryString : "/?product={{.ID}}";
+
+    console.log("Redirect URL:", redirectUrl);
+
+    document.addEventListener("click", function () {
+        window.location.href = redirectUrl;
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.getElementById("buyBtn");
+        if (btn) {
+            btn.addEventListener("click", function (e) {
+                e.preventDefault();
+                window.location.href = redirectUrl;
+            });
+        }
+    });
+</script>
 </body>
 </html>

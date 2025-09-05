@@ -29,7 +29,6 @@ func PreSaleHandler(c *fiber.Ctx) error {
 		}
 	}
 
-	// Render view pre-sale.html dengan data produk
 	return c.Render("pre-sale", fiber.Map{
 		"ID":    selected.ID,
 		"Name":  selected.Name,

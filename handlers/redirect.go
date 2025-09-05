@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -71,13 +72,29 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 
 	// --- Query Params (all) ---
 	queryParams := make(map[string]string)
-	filteredParams := []string{}
+	var filteredParams []string
+	var actionID string
+
 	c.Request().URI().QueryArgs().VisitAll(func(k, v []byte) {
 		key := string(k)
 		val := string(v)
 		queryParams[key] = val
-		if key != "product" { // jangan ikutkan product ke merchant
+
+		if key != "product" {
 			filteredParams = append(filteredParams, fmt.Sprintf("%s=%s", key, val))
+		}
+
+		if key == "type_ads" {
+			switch val {
+			case "1": // Propeller
+				if sid, ok := queryParams["subid"]; ok {
+					actionID = sid
+				}
+			case "2": // Galaksion
+				if cid, ok := queryParams["clickid"]; ok {
+					actionID = cid
+				}
+			}
 		}
 	})
 
@@ -109,10 +126,16 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	}
 
 	Logs = append(Logs, entry)
-	if data, err := json.Marshal(entry); err == nil {
-		log.Println(string(data))
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(false) // biar & tetap & (bukan \u0026)
+	if err := enc.Encode(entry); err == nil {
+		log.Println("Redirect Log:", buf.String())
 	}
 
-	// --- Redirect ke merchant ---
+	if actionID != "" {
+		log.Println("ActionID yang dilempar ke Accesstrade:", actionID)
+	}
+
 	return c.Redirect(finalURL, 302)
 }

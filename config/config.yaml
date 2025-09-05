@@ -1,7 +1,11 @@
 propellerAds:
   aid: "YOUR_AID"
   tid: "YOUR_TID"
-  postback_url: "http://ad.propellerads.com/conversion.php"
+  postback_url: 'http://ad.propellerads.com/conversion.php'
+
+galaksion:
+  cid: "46704"
+  postback_url: 'http://postback.report/postback'
 
 products:
   - id: 1

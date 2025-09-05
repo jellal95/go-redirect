@@ -1,16 +1,5 @@
 package models
 
-type Config struct {
-	Products []Product `yaml:"products"`
-	PropAds  PropAds   `yaml:"propellerAds"`
-}
-
-type PropAds struct {
-	Aid         string `yaml:"aid"`
-	Tid         string `yaml:"tid"`
-	PostbackURL string `yaml:"postback_url"`
-}
-
 type Product struct {
 	ID         string  `json:"id" yaml:"id"`
 	Name       string  `json:"name" yaml:"name"`

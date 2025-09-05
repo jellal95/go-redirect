@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"fmt"
 	"go-redirect/models"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -53,16 +54,21 @@ func ForwardPostbackToPropeller(subID, payout string) {
 		return
 	}
 
-	url := fmt.Sprintf(
-		"%s?aid=%s&tid=%s&visitor_id=%s&payout=%s",
-		PropAdsConfig.PostbackURL,
-		PropAdsConfig.Aid,
-		PropAdsConfig.Tid,
-		subID,
-		payout,
-	)
+	q := url.Values{}
+	q.Set("aid", PropAdsConfig.Aid)
+	q.Set("tid", PropAdsConfig.Tid)
+	q.Set("visitor_id", subID)
+	if payout != "" {
+		q.Set("payout", payout)
+	}
+	fullURL := PropAdsConfig.PostbackURL
+	if strings.Contains(fullURL, "?") {
+		fullURL += "&" + q.Encode()
+	} else {
+		fullURL += "?" + q.Encode()
+	}
 
-	_, err := http.Get(url)
+	_, err := http.Get(fullURL)
 	if err != nil {
 		log.Println("Failed to send postback to PropellerAds:", err)
 	} else {
@@ -76,14 +82,17 @@ func ForwardPostbackToGalaksion(subID string) {
 		return
 	}
 
-	url := fmt.Sprintf(
-		"%s?cid=%s&click_id=%s",
-		GalaksionConfig.PostbackURL,
-		GalaksionConfig.Cid,
-		subID,
-	)
+	q := url.Values{}
+	q.Set("cid", GalaksionConfig.Cid)
+	q.Set("click_id", subID)
+	fullURL := GalaksionConfig.PostbackURL
+	if strings.Contains(fullURL, "?") {
+		fullURL += "&" + q.Encode()
+	} else {
+		fullURL += "?" + q.Encode()
+	}
 
-	_, err := http.Get(url)
+	_, err := http.Get(fullURL)
 	if err != nil {
 		log.Println("Failed to send postback to Galaksion:", err)
 	} else {

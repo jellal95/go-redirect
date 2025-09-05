@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand/v2"
+	"net/url"
 	"strings"
 	"time"
 
@@ -31,6 +32,13 @@ func RedirectHandler(c *fiber.Ctx) error {
 	total := 0.0
 	for _, p := range Products {
 		total += p.Percentage
+	}
+	if len(Products) == 0 {
+		return c.Status(404).SendString("No products configured")
+	}
+	if total <= 0 {
+		// Fallback to first product deterministically if weights are zero
+		return doRedirect(c, Products[0])
 	}
 	r := rand.Float64() * total
 	sum := 0.0
@@ -81,7 +89,8 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		queryParams[key] = val
 
 		if key != "product" {
-			filteredParams = append(filteredParams, fmt.Sprintf("%s=%s", key, val))
+			// Ensure proper URL-encoding of key and value when rebuilding query string
+			filteredParams = append(filteredParams, fmt.Sprintf("%s=%s", url.QueryEscape(key), url.QueryEscape(val)))
 		}
 
 		if key == "type_ads" {
@@ -128,13 +137,13 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	Logs = append(Logs, entry)
 	buf := &bytes.Buffer{}
 	enc := json.NewEncoder(buf)
-	enc.SetEscapeHTML(false) // biar & tetap & (bukan \u0026)
+	enc.SetEscapeHTML(false)
 	if err := enc.Encode(entry); err == nil {
 		log.Println("Redirect Log:", buf.String())
 	}
 
 	if actionID != "" {
-		log.Println("ActionID yang dilempar ke Accesstrade:", actionID)
+		log.Println("ActionID yang dilempar ke web affiliate:", actionID)
 	}
 
 	return c.Redirect(finalURL, 302)

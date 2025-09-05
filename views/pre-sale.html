@@ -9,7 +9,7 @@
             padding: 0;
             font-family: "Segoe UI", sans-serif;
             height: 100vh;
-            background: url("https://img.freepik.com/free-photo/official-date-black-friday-start_23-2148313175.jpg?semt=ais_hybrid&w=740&q=80") no-repeat center center fixed;
+            background: url("https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=1920&auto=format&fit=crop") no-repeat center center fixed;
             background-size: cover;
             display: flex;
             justify-content: center;
@@ -33,7 +33,7 @@
             padding: 30px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
             text-align: center;
-            max-width: 400px;
+            max-width: 480px;
             z-index: 1;
         }
 
@@ -70,9 +70,16 @@
         }
 
         @media (max-width: 600px) {
+            body {
+                padding: 8px;
+            }
+
             .card {
-                width: 90%;
-                padding: 20px;
+                width: 96%;
+                max-width: 96%;
+                padding: 18px;
+                border-radius: 12px;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
             }
 
             h1 {
@@ -111,15 +118,90 @@
                 box-shadow: 0 0 0 0 rgba(255, 87, 34, 0);
             }
         }
+
+        /* Add some utility styles */
+        .countdown {
+            display: inline-block;
+            background: #1b5e20;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+        }
+
+        .badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(0, 0, 0, 0.06);
+            color: #333;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+
+        .benefits {
+            text-align: left;
+            margin: 12px 0 18px;
+            color: #333;
+        }
+
+        .benefits li {
+            margin: 6px 0;
+        }
+
+        .sticky-cta {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 16px;
+            display: none;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        .sticky-cta .btn {
+            box-shadow: 0 10px 24px rgba(255, 87, 34, 0.5);
+        }
+
+        @media (max-width: 600px) {
+            .sticky-cta {
+                display: flex;
+            }
+        }
     </style>
 </head>
 <body>
-<div class="overlay"></div>
-<div class="card">
+<div class="overlay" aria-hidden="true"></div>
+<div class="card" role="dialog" aria-labelledby="title" aria-describedby="desc">
     <img src="{{.Image}}" alt="{{.Name}}">
-    <h2>🔥 {{.Name}} Promo! 🔥</h2>
-    <p>Klik tombol atau di mana saja untuk lanjut & dapatkan penawaran terbaik sekarang juga!</p>
-    <a id="buyBtn" class="btn" href="#">Beli Sekarang</a>
+    <div class="countdown" id="countdown">Berakhir dalam 10:00</div>
+    <h2 id="title">🔥 {{.Name}} Promo Spesial! 🔥</h2>
+    <p id="desc">Klik tombol atau di mana saja untuk lanjut & dapatkan penawaran terbaik sekarang juga!</p>
+    <ul class="benefits">
+        <li>Diskon eksklusif untuk pembelian sekarang</li>
+        <li>Garansi 100% uang kembali</li>
+        <li>Stok terbatas — jangan sampai kehabisan</li>
+    </ul>
+    <a id="buyBtn" class="btn" href="#" role="button" aria-label="Beli sekarang">Beli Sekarang</a>
+    <div id="autoNote" style="margin-top:8px;color:#666;font-size:13px;">Akan otomatis lanjut dalam 5 detik…</div>
+    <div class="badges" aria-hidden="true">
+        <span class="badge">✔ Checkout Aman</span>
+        <span class="badge">★ 4.9/5 Rating</span>
+        <span class="badge">⚡ Proses Cepat</span>
+    </div>
+</div>
+<div class="sticky-cta">
+    <a id="buyBtnSticky" class="btn" href="#">Beli Sekarang</a>
 </div>
 <script>
     const params = new URLSearchParams(window.location.search);
@@ -134,21 +216,100 @@
     const queryString = filteredParams.toString();
     const redirectUrl = queryString ? "/?product={{.ID}}&" + queryString : "/?product={{.ID}}";
 
-    console.log("Redirect URL:", redirectUrl);
+    // Countdown timer: default 10 minutes; allow override via ?expires=<unix_ms>
+    const countdownEl = document.getElementById('countdown');
+    (function initCountdown() {
+        let endTs = parseInt(params.get('expires') || '0', 10);
+        if (!endTs || isNaN(endTs)) {
+            endTs = Date.now() + 10 * 60 * 1000; // 10 minutes default
+        }
 
-    document.addEventListener("click", function () {
+        function fmt(ms) {
+            const s = Math.max(0, Math.floor(ms / 1000));
+            const m = String(Math.floor(s / 60)).padStart(2, '0');
+            const r = String(s % 60).padStart(2, '0');
+            return m + ':' + r;
+        }
+
+        function tick() {
+            const left = endTs - Date.now();
+            if (left <= 0) {
+                countdownEl.textContent = 'Segera berakhir!';
+                clearInterval(iv);
+                return;
+            }
+            countdownEl.textContent = 'Berakhir dalam ' + fmt(left);
+        }
+
+        tick();
+        const iv = setInterval(tick, 1000);
+    })();
+
+    // Make the whole page clickable, but preserve normal behavior for explicit links/buttons
+    function go() {
         window.location.href = redirectUrl;
-    });
+    }
+    // Navigate without adding a new history entry (so Back won't return here)
+    function goReplace() {
+        window.location.replace(redirectUrl);
+    }
 
-    document.addEventListener("DOMContentLoaded", function () {
-        const btn = document.getElementById("buyBtn");
-        if (btn) {
-            btn.addEventListener("click", function (e) {
-                e.preventDefault();
-                window.location.href = redirectUrl;
-            });
+    document.addEventListener('click', function (e) {
+        const path = e.composedPath ? e.composedPath() : [];
+        const isInteractive = path.some(el => el && el.tagName && ['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName));
+        if (!isInteractive) {
+            go();
         }
     });
+
+    function wireCTA(btn) {
+        if (!btn) return;
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            go();
+        });
+        // Support keyboard activation
+        btn.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                go();
+            }
+        });
+        // Allow middle-click to open in same tab by just navigating (we prevent default above anyway)
+        btn.addEventListener('auxclick', function (e) {
+            e.preventDefault();
+            go();
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        wireCTA(document.getElementById('buyBtn'));
+        wireCTA(document.getElementById('buyBtnSticky'));
+    });
+
+    // Auto-redirect after N seconds (default 5). Override with ?auto=3 or ?auto=5
+    (function initAutoRedirect() {
+        const note = document.getElementById('autoNote');
+        let left = Math.max(1, parseInt(params.get('auto') || '15', 10));
+
+        function render() {
+            if (note) note.textContent = `Akan otomatis lanjut dalam ${left} detik…`;
+        }
+
+        render();
+        let timer = setInterval(() => {
+            left -= 1;
+            render();
+            if (left <= 0) {
+                clearInterval(timer);
+                // Use history replacement so Back won't come back to pre-sale after auto-redirect
+                goReplace();
+            }
+        }, 1000);
+        // If user clicks anywhere interactive or the page (which triggers go()), the timer will be cleared by navigation naturally.
+    })();
+
+    console.log('Redirect URL:', redirectUrl);
 </script>
 </body>
 </html>

@@ -2,8 +2,7 @@ package handlers
 
 import (
 	"go-redirect/models"
-	"math/rand"
-	"time"
+	"math/rand/v2"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -13,19 +12,26 @@ func PreSaleHandler(c *fiber.Ctx) error {
 		return c.Status(404).SendString("No products configured")
 	}
 
-	rand.Seed(time.Now().UnixNano())
 	total := 0.0
 	for _, p := range Products {
 		total += p.Percentage
 	}
-	r := rand.Float64() * total
-	sum := 0.0
+
 	var selected models.Product
-	for _, p := range Products {
-		sum += p.Percentage
-		if r <= sum {
-			selected = p
-			break
+	if total <= 0 {
+		selected = Products[0]
+	} else {
+		r := rand.Float64() * total
+		sum := 0.0
+		for _, p := range Products {
+			sum += p.Percentage
+			if r <= sum {
+				selected = p
+				break
+			}
+		}
+		if selected.ID == "" {
+			selected = Products[len(Products)-1]
 		}
 	}
 

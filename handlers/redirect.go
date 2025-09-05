@@ -118,10 +118,15 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	}
 
 	// --- Logging ---
+	// For logs, try to show a human-readable (decoded) URL, while keeping the encoded finalURL for the actual redirect.
+	displayURL, err := url.QueryUnescape(finalURL)
+	if err != nil || displayURL == "" {
+		displayURL = finalURL
+	}
 	entry := models.LogEntry{
 		Timestamp:   time.Now().Format(time.RFC3339),
 		ProductName: product.Name,
-		URL:         finalURL,
+		URL:         displayURL,
 		IP:          ip,
 		UserAgent:   c.Get("User-Agent"),
 		Browser:     browser,

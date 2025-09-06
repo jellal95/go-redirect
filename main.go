@@ -25,7 +25,9 @@ func main() {
 	}
 
 	handlers.Products = cfg.Products
-	handlers.PropAdsConfig = cfg.PropAds
+	handlers.PropellerConfig = cfg.Propeller
+	handlers.GalaksionConfig = cfg.Galaksion
+	handlers.PopcashConfig = cfg.Popcash
 
 	// Init Geo
 	if err := geo.InitGeoDB("GeoLite2-City.mmdb"); err != nil {

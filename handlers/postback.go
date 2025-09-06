@@ -12,8 +12,9 @@ import (
 )
 
 var PostbackLogs []map[string]string
-var PropAdsConfig models.PropAds
+var PropellerConfig models.Propeller
 var GalaksionConfig models.Galaksion
+var PopcashConfig models.Popcash
 
 func GetPostbacks(c *fiber.Ctx) error {
 	return c.JSON(PostbackLogs)
@@ -34,10 +35,12 @@ func PostbackHandler(c *fiber.Ctx) error {
 	typeAds := data["type_ads"]
 
 	switch typeAds {
-	case "1": // PropellerAds
+	case models.AdTypePropeller:
 		go ForwardPostbackToPropeller(subID, payout)
-	case "2": // Galaksion
+	case models.AdTypeGalaksion:
 		go ForwardPostbackToGalaksion(subID)
+	case models.AdTypePopcash:
+		go ForwardPostbackToPopcash(subID, payout)
 	default:
 		log.Println("Unknown type_ads, just logging:", typeAds)
 	}
@@ -55,13 +58,13 @@ func ForwardPostbackToPropeller(subID, payout string) {
 	}
 
 	q := url.Values{}
-	q.Set("aid", PropAdsConfig.Aid)
-	q.Set("tid", PropAdsConfig.Tid)
+	q.Set("aid", PropellerConfig.Aid)
+	q.Set("tid", PropellerConfig.Tid)
 	q.Set("visitor_id", subID)
 	if payout != "" {
 		q.Set("payout", payout)
 	}
-	fullURL := PropAdsConfig.PostbackURL
+	fullURL := PropellerConfig.PostbackURL
 	if strings.Contains(fullURL, "?") {
 		fullURL += "&" + q.Encode()
 	} else {
@@ -97,5 +100,47 @@ func ForwardPostbackToGalaksion(subID string) {
 		log.Println("Failed to send postback to Galaksion:", err)
 	} else {
 		log.Println("Forwarded postback to Galaksion for subID:", subID)
+	}
+}
+
+func ForwardPostbackToPopcash(subID, payout string) {
+	if subID == "" {
+		log.Println("Popcash postback missing subID (clickid)")
+		return
+	}
+
+	baseURL := PopcashConfig.PostbackURL
+	if baseURL == "" {
+		baseURL = "https://ct.popcash.net/click"
+	}
+	aid := PopcashConfig.Aid
+	if aid == "" {
+		aid = "494669"
+	}
+	typeVal := PopcashConfig.Type
+	if typeVal == "" {
+		typeVal = "1"
+	}
+
+	q := url.Values{}
+	q.Set("aid", aid)
+	q.Set("type", typeVal)
+	q.Set("clickid", subID)
+	if payout != "" {
+		q.Set("payout", payout)
+	}
+
+	fullURL := baseURL
+	if strings.Contains(fullURL, "?") {
+		fullURL += "&" + q.Encode()
+	} else {
+		fullURL += "?" + q.Encode()
+	}
+
+	_, err := http.Get(fullURL)
+	if err != nil {
+		log.Println("Failed to send postback to Popcash:", err)
+	} else {
+		log.Println("Forwarded postback to Popcash for clickid:", subID)
 	}
 }

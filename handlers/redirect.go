@@ -81,7 +81,7 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	// --- Query Params (all) ---
 	queryParams := make(map[string]string)
 	var filteredParams []string
-	var actionID string
+	var subIDOut string
 
 	c.Request().URI().QueryArgs().VisitAll(func(k, v []byte) {
 		key := string(k)
@@ -89,23 +89,37 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		queryParams[key] = val
 
 		if key != "product" {
-			// Ensure proper URL-encoding of key and value when rebuilding query string
 			filteredParams = append(filteredParams, fmt.Sprintf("%s=%s", url.QueryEscape(key), url.QueryEscape(val)))
 		}
 
 		if key == "type_ads" {
 			switch val {
-			case "1": // Propeller
-				if sid, ok := queryParams["subid"]; ok {
-					actionID = sid
+			case models.AdTypePropeller: // PropellerAds
+				if sid, ok := queryParams["subid"]; ok && subIDOut == "" {
+					subIDOut = sid
 				}
-			case "2": // Galaksion
-				if cid, ok := queryParams["clickid"]; ok {
-					actionID = cid
+			case models.AdTypeGalaksion: // Galaksion
+				if cid, ok := queryParams["clickid"]; ok && subIDOut == "" {
+					subIDOut = cid
+				}
+			case models.AdTypePopcash: // Popcash
+				if cid, ok := queryParams["clickid"]; ok && subIDOut == "" {
+					subIDOut = cid
 				}
 			}
 		}
 	})
+
+	if subIDOut != "" {
+		var cleaned []string
+		for _, kv := range filteredParams {
+			if !strings.HasPrefix(kv, "subid=") && !strings.HasPrefix(kv, "subid=") {
+				cleaned = append(cleaned, kv)
+			}
+		}
+		filteredParams = cleaned
+		filteredParams = append(filteredParams, fmt.Sprintf("%s=%s", url.QueryEscape("subid"), url.QueryEscape(subIDOut)))
+	}
 
 	// --- Build final URL ---
 	finalURL := product.URL
@@ -118,7 +132,6 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	}
 
 	// --- Logging ---
-	// For logs, try to show a human-readable (decoded) URL, while keeping the encoded finalURL for the actual redirect.
 	displayURL, err := url.QueryUnescape(finalURL)
 	if err != nil || displayURL == "" {
 		displayURL = finalURL
@@ -147,8 +160,8 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		log.Println("Redirect Log:", buf.String())
 	}
 
-	if actionID != "" {
-		log.Println("ActionID yang dilempar ke web affiliate:", actionID)
+	if subIDOut != "" {
+		log.Println("subid yang dilempar ke web affiliate:", subIDOut)
 	}
 
 	return c.Redirect(finalURL, 302)

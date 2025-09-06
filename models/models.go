@@ -1,5 +1,12 @@
 package models
 
+// Ad network type identifiers used in query param `type_ads` and postbacks.
+const (
+	AdTypePropeller = "1" // PropellerAds
+	AdTypeGalaksion = "2" // Galaksion
+	AdTypePopcash   = "3" // Popcash
+)
+
 type Product struct {
 	ID         string  `json:"id" yaml:"id"`
 	Name       string  `json:"name" yaml:"name"`

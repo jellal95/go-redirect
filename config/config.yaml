@@ -1,4 +1,4 @@
-propellerAds:
+propeller:
   aid: "YOUR_AID"
   tid: "YOUR_TID"
   postback_url: 'http://ad.propellerads.com/conversion.php'
@@ -6,6 +6,11 @@ propellerAds:
 galaksion:
   cid: "46704"
   postback_url: 'http://postback.report/postback'
+
+popcash:
+  aid: "494669"
+  type: "1"
+  postback_url: 'https://ct.popcash.net/click'
 
 products:
   - id: 1

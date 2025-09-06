@@ -28,3 +28,13 @@ products:
     url: "https://atid.me/go/WTvq2l3w"
     percentage: 70
     image: "https://img.lazcdn.com/g/tps/images/ims-web/TB1Hs8GaMFY.1VjSZFnXXcFHXXa.png"
+  - id: 5
+    name: "Tiket"
+    url: "https://atid.me/go/1XudxBJp"
+    percentage: 3.5
+    image: "https://s-light.tiket.photos/t/01E25EBZS3W0FY9GTG6C42E1SE/original/test-discovery/2024/03/01/8ebd3ae4-f545-4809-ac73-ed0fd7434377-1709290197649-a6b320e89d9f213b43896d34a3725b18.png"
+  - id: 6
+    name: "Samsung"
+    url: "https://atid.me/go/Ee0Sd2Ln"
+    percentage: 3
+    image: "https://s-light.tiket.photos/t/01E25EBZS3W0FY9GTG6C42E1SE/original/test-discovery/2024/03/01/8ebd3ae4-f545-4809-ac73-ed0fd7434377-1709290197649-a6b320e89d9f213b43896d34a3725b18.png"

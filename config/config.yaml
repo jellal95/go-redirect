@@ -43,3 +43,13 @@ products:
     url: "https://atid.me/go/Ee0Sd2Ln"
     percentage: 3.0
     image: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg"
+  - id: 7
+    name: "Lazada Indra - Produk"
+    url: "https://c.lazada.co.id/t/c.1At2Oc"
+    percentage: 10.0
+    image: "https://img.lazcdn.com/g/tps/images/ims-web/TB1Hs8GaMFY.1VjSZFnXXcFHXXa.png"
+  - id: 8
+    name: "Lazada Indra - Campaign"
+    url: "https://c.lazada.co.id/t/c.1At2lO"
+    percentage: 10.0
+    image: "https://img.lazcdn.com/g/tps/images/ims-web/TB1Hs8GaMFY.1VjSZFnXXcFHXXa.png"

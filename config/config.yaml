@@ -15,41 +15,31 @@ popcash:
 products:
   - id: 1
     name: "EIGER"
-    url: "https://atid.me/go/DOEFt9xt"
+    url: "https://atid.me/004vll002lt5"
     percentage: 6.0
     image: "https://images.accesstrade.co.id/9565f1cd832c9675c76672081c819342/988221_320x50_20241106104432109.jpg"
   - id: 2
     name: "Blibli"
-    url: "https://atid.me/go/3uRpXt00"
+    url: "https://atid.me/00dh9j002lt5"
     percentage: 5.0
     image: "https://images.accesstrade.co.id/fb1378d0b80ae44aae0000a3cff0b90f/765393_750x120_20240226105340691.jpg"
   - id: 3
     name: "AXA Mandiri"
-    url: "https://atid.me/go/MmadBUbc"
+    url: "https://atid.me/00i1h5002lt5"
     percentage: 10.0
     image: "https://images.accesstrade.co.id/58ae23d878a47004366189884c2f8440/882456_790x90_20240807073010659.jpg"
   - id: 4
     name: "Lazada"
-    url: "https://atid.me/go/WTvq2l3w"
+    url: "https://atid.me/000498002lt5"
     percentage: 72.0
     image: "https://img.lazcdn.com/g/tps/images/ims-web/TB1Hs8GaMFY.1VjSZFnXXcFHXXa.png"
   - id: 5
     name: "Tiket"
-    url: "https://atid.me/go/1XudxBJp"
+    url: "https://atid.me/0082ly0027gt"
     percentage: 4.0
     image: "https://images.accesstrade.co.id/fcdf698a5d673435e0a5a6f9ffea05ca/1068225_1024x294_20250324084400239.jpg"
   - id: 6
     name: "Samsung"
-    url: "https://atid.me/go/Ee0Sd2Ln"
+    url: "https://atid.me/go/6YSjiEJo"
     percentage: 3.0
     image: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg"
-  - id: 7
-    name: "Lazada Indra - Produk"
-    url: "https://c.lazada.co.id/t/c.1At2Oc"
-    percentage: 10.0
-    image: "https://img.lazcdn.com/g/tps/images/ims-web/TB1Hs8GaMFY.1VjSZFnXXcFHXXa.png"
-  - id: 8
-    name: "Lazada Indra - Campaign"
-    url: "https://c.lazada.co.id/t/c.1At2lO"
-    percentage: 10.0
-    image: "https://img.lazcdn.com/g/tps/images/ims-web/TB1Hs8GaMFY.1VjSZFnXXcFHXXa.png"

@@ -31,7 +31,7 @@ products:
   - id: 4
     name: "Lazada"
     url: "https://atid.me/000498002lt5"
-    percentage: 72.0
+    percentage: 42.0
     image: "https://img.lazcdn.com/g/tps/images/ims-web/TB1Hs8GaMFY.1VjSZFnXXcFHXXa.png"
   - id: 5
     name: "Tiket"
@@ -53,3 +53,8 @@ products:
     url: "https://c.lazada.co.id/t/c.1AtgpL?sub_id1=%7Bsiteid%7D&sub_aff_id=%7Bclickid%7D&sub_id6=%7Btype_ads%7D&sub_id3=%7Bcc%7D&sub_id2=%7Bcampaignid%7D&sub_id5=%7Bos%7D&sub_id4=%7Bdevice%7D"
     percentage: 5.0
     image: "https://sg-test-11.slatic.net/other/lzd-ad/eeb78e94602390213d814d863997b497.png"
+  - id: 9
+    name: "Tiktok"
+    url: "https://goeco.mobi/QSwVOAXD"
+    percentage: 5.0
+    image: ""

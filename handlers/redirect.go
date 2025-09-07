@@ -37,7 +37,6 @@ func RedirectHandler(c *fiber.Ctx) error {
 		return c.Status(404).SendString("No products configured")
 	}
 	if total <= 0 {
-		// Fallback to first product deterministically if weights are zero
 		return doRedirect(c, Products[0])
 	}
 	r := rand.Float64() * total

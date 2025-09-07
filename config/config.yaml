@@ -43,3 +43,13 @@ products:
     url: "https://atid.me/go/6YSjiEJo"
     percentage: 3.0
     image: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg"
+  - id: 7
+    name: "Lazada Product Recomendation"
+    url: "https://c.lazada.co.id/t/c.1AtgLz?sub_id1=%7Bsiteid%7D&sub_aff_id=%7Bclickid%7D&sub_id6=%7Btype_ads%7D&sub_id3=%7Bcc%7D&sub_id2=%7Bcampaignid%7D&sub_id5=%7Bos%7D&sub_id4=%7Bdevice%7D"
+    percentage: 5.0
+    image: "https://sg-test-11.slatic.net/other/lzd-ad/aee0a1fce3b2bebd184ba963291cb97e.png"
+  - id: 8
+    name: "Lazada 9.9"
+    url: "https://c.lazada.co.id/t/c.1AtgpL?sub_id1=%7Bsiteid%7D&sub_aff_id=%7Bclickid%7D&sub_id6=%7Btype_ads%7D&sub_id3=%7Bcc%7D&sub_id2=%7Bcampaignid%7D&sub_id5=%7Bos%7D&sub_id4=%7Bdevice%7D"
+    percentage: 5.0
+    image: "https://sg-test-11.slatic.net/other/lzd-ad/eeb78e94602390213d814d863997b497.png"

@@ -113,12 +113,12 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	if subIDOut != "" {
 		var cleaned []string
 		for _, kv := range filteredParams {
-			if !strings.HasPrefix(kv, "subid=") && !strings.HasPrefix(kv, "subid=") {
+			if !strings.HasPrefix(kv, "sub_id=") && !strings.HasPrefix(kv, "sub_id=") {
 				cleaned = append(cleaned, kv)
 			}
 		}
 		filteredParams = cleaned
-		filteredParams = append(filteredParams, fmt.Sprintf("%s=%s", url.QueryEscape("subid"), url.QueryEscape(subIDOut)))
+		filteredParams = append(filteredParams, fmt.Sprintf("%s=%s", url.QueryEscape("sub_id"), url.QueryEscape(subIDOut)))
 	}
 
 	// --- Build final URL ---

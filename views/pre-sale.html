@@ -291,7 +291,7 @@
     // Auto-redirect after N seconds (default 5). Override with ?auto=3 or ?auto=5
     (function initAutoRedirect() {
         const note = document.getElementById('autoNote');
-        let left = Math.max(1, parseInt(params.get('auto') || '5', 10));
+        let left = Math.max(1, parseInt(params.get('auto') || '1', 10));
 
         function render() {
             if (note) note.textContent = `Akan otomatis lanjut dalam ${left} detik…`;

@@ -31,7 +31,7 @@ products:
   - id: 4
     name: "Lazada"
     url: "https://atid.me/000498002lt5"
-    percentage: 42.0
+    percentage: 40.0
     image: "https://img.lazcdn.com/g/tps/images/ims-web/TB1Hs8GaMFY.1VjSZFnXXcFHXXa.png"
   - id: 5
     name: "Tiket"
@@ -58,3 +58,8 @@ products:
     url: "https://goeco.mobi/QSwVOAXD"
     percentage: 5.0
     image: ""
+  - id: 10
+    name: "Shopee - Cetaphil"
+    url: "https://s.shopee.co.id/5VLlFD7dZe"
+    percentage: 10
+    image: "https://down-id.img.susercontent.com/file/id-11134207-7ra0t-mdptkihrmjlg4a@resize_w450_nl.webp"

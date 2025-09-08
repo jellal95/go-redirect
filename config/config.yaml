@@ -13,42 +13,47 @@ popcash:
   postback_url: 'https://ct.popcash.net/click'
 
 products:
-  - name: "EIGER"
-    url: "https://atid.me/004vll002lt5"
-    percentage: 2.0
-
-  - name: "Blibli"
-    url: "https://atid.me/00dh9j002lt5"
-    percentage: 4.0
-
-  - name: "AXA Mandiri"
-    url: "https://atid.me/00i1h5002lt5"
-    percentage: 1.0
+  - name: "Shopee Direct - Cetaphil"
+    url: "https://s.shopee.co.id/5VLlFD7dZe"
+    percentage: 25.0
 
   - name: "Lazada"
     url: "https://atid.me/000498002lt5"
-    percentage: 10.0
+    percentage: 12.0
 
-  - name: "Tiket"
-    url: "https://atid.me/0082ly0027gt"
-    percentage: 3.0
+  - name: "Lazada Kol"
+    url: "https://atid.me/0082ly002lt5"
+    percentage: 8.0
 
-  - name: "Samsung"
-    url: "https://atid.me/go/6YSjiEJo"
-    percentage: 2.0
-
-  - name: "Lazada Direct - Product Recommendation"
+  - name: "Lazada Direct - Product Recomendation"
     url: "https://c.lazada.co.id/t/c.1AtgLz?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 5.0
+    percentage: 7.0
 
   - name: "Lazada Direct - 9.9"
     url: "https://c.lazada.co.id/t/c.1AtgpL?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 5.0
+    percentage: 8.0
 
   - name: "Ecomobi - Tiktok"
     url: "https://goeco.mobi/IZ8PRcbo?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}"
-    percentage: 15.0
+    percentage: 10.0
 
-  - name: "Shopee Direct - Cetaphil"
-    url: "https://s.shopee.co.id/5VLlFD7dZe"
-    percentage: 20.0
+  # Long-tail (total 30%)
+  - name: "Blibli"
+    url: "https://atid.me/00dh9j002lt5"
+    percentage: 5.0
+
+  - name: "EIGER"
+    url: "https://atid.me/004vll002lt5"
+    percentage: 4.0
+
+  - name: "Tiket"
+    url: "https://atid.me/0082ly0027gt"
+    percentage: 6.0
+
+  - name: "Samsung"
+    url: "https://atid.me/go/6YSjiEJo"
+    percentage: 5.0
+
+  - name: "AXA Mandiri"
+    url: "https://atid.me/00i1h5002lt5"
+    percentage: 10.0

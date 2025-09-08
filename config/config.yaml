@@ -13,53 +13,42 @@ popcash:
   postback_url: 'https://ct.popcash.net/click'
 
 products:
-  - id: 1
-    name: "EIGER"
+  - name: "EIGER"
     url: "https://atid.me/004vll002lt5"
     percentage: 6.0
-    image: "https://images.accesstrade.co.id/9565f1cd832c9675c76672081c819342/988221_320x50_20241106104432109.jpg"
-  - id: 2
-    name: "Blibli"
+
+  - name: "Blibli"
     url: "https://atid.me/00dh9j002lt5"
     percentage: 5.0
-    image: "https://images.accesstrade.co.id/fb1378d0b80ae44aae0000a3cff0b90f/765393_750x120_20240226105340691.jpg"
-  - id: 3
-    name: "AXA Mandiri"
+
+  - name: "AXA Mandiri"
     url: "https://atid.me/00i1h5002lt5"
     percentage: 10.0
-    image: "https://images.accesstrade.co.id/58ae23d878a47004366189884c2f8440/882456_790x90_20240807073010659.jpg"
-  - id: 4
-    name: "Lazada"
+
+  - name: "Lazada"
     url: "https://atid.me/000498002lt5"
-    percentage: 40.0
-    image: "https://img.lazcdn.com/g/tps/images/ims-web/TB1Hs8GaMFY.1VjSZFnXXcFHXXa.png"
-  - id: 5
-    name: "Tiket"
+    percentage: 20.0
+
+  - name: "Tiket"
     url: "https://atid.me/0082ly0027gt"
     percentage: 4.0
-    image: "https://images.accesstrade.co.id/fcdf698a5d673435e0a5a6f9ffea05ca/1068225_1024x294_20250324084400239.jpg"
-  - id: 6
-    name: "Samsung"
+
+  - name: "Samsung"
     url: "https://atid.me/go/6YSjiEJo"
     percentage: 3.0
-    image: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg"
-  - id: 7
-    name: "Lazada Product Recomendation"
-    url: "https://c.lazada.co.id/t/c.1AtgLz?sub_id1=%7Bsiteid%7D&sub_aff_id=%7Bclickid%7D&sub_id6=%7Btype_ads%7D&sub_id3=%7Bcc%7D&sub_id2=%7Bcampaignid%7D&sub_id5=%7Bos%7D&sub_id4=%7Bdevice%7D"
+
+  - name: "Lazada Direct - Product Recomendation"
+    url: "https://c.lazada.co.id/t/c.1AtgLz?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
     percentage: 5.0
-    image: "https://sg-test-11.slatic.net/other/lzd-ad/aee0a1fce3b2bebd184ba963291cb97e.png"
-  - id: 8
-    name: "Lazada 9.9"
-    url: "https://c.lazada.co.id/t/c.1AtgpL?sub_id1=%7Bsiteid%7D&sub_aff_id=%7Bclickid%7D&sub_id6=%7Btype_ads%7D&sub_id3=%7Bcc%7D&sub_id2=%7Bcampaignid%7D&sub_id5=%7Bos%7D&sub_id4=%7Bdevice%7D"
+
+  - name: "Lazada Direct - 9.9"
+    url: "https://c.lazada.co.id/t/c.1AtgpL?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
     percentage: 5.0
-    image: "https://sg-test-11.slatic.net/other/lzd-ad/eeb78e94602390213d814d863997b497.png"
-  - id: 9
-    name: "Tiktok"
-    url: "https://goeco.mobi/QSwVOAXD"
+
+  - name: "Ecomobi - Tiktok"
+    url: "https://goeco.mobi/IZ8PRcbo?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}"
     percentage: 5.0
-    image: ""
-  - id: 10
-    name: "Shopee - Cetaphil"
+
+  - name: "Shopee Direct - Cetaphil"
     url: "https://s.shopee.co.id/5VLlFD7dZe"
-    percentage: 10
-    image: "https://down-id.img.susercontent.com/file/id-11134207-7ra0t-mdptkihrmjlg4a@resize_w450_nl.webp"
+    percentage: 15

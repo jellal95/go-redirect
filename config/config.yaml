@@ -34,7 +34,7 @@ products:
     percentage: 8.0
 
   - name: "Ecomobi - Tiktok"
-    url: "https://goeco.mobi/IZ8PRcbo?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}"
+    url: "https://goeco.mobi/IZ8PRcbo?sub1={siteid}&sub2={sub_id}&sub3={type_ads}"
     percentage: 10.0
 
   # Long-tail (total 30%)

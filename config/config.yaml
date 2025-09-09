@@ -37,7 +37,7 @@ products:
     url: "https://goeco.mobi/IZ8PRcbo?sub1={siteid}&sub2={sub_id}&sub3={type_ads}&click_id={clickid}"
     percentage: 10.0
 
-  # Long-tail (total 30%)
+  # Long-tail (total ~30%)
   - name: "Blibli"
     url: "https://atid.me/00dh9j002lt5"
     percentage: 5.0
@@ -48,12 +48,20 @@ products:
 
   - name: "Tiket"
     url: "https://atid.me/0082ly0027gt"
-    percentage: 6.0
+    percentage: 5.0
 
   - name: "Samsung"
     url: "https://atid.me/go/6YSjiEJo"
-    percentage: 5.0
+    percentage: 4.0
 
   - name: "AXA Mandiri"
     url: "https://atid.me/00i1h5002lt5"
-    percentage: 10.0
+    percentage: 8.0
+
+  - name: "Unilever Flagship Store Lazada"
+    url: "https://atid.me/go/Fn1mxkYU"
+    percentage: 3.0
+
+  - name: "Skintific Lazada"
+    url: "https://atid.me/go/lmEds0p7"
+    percentage: 3.0

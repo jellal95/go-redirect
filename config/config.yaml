@@ -15,11 +15,11 @@ popcash:
 products:
   - name: "Shopee Direct - Cetaphil"
     url: "https://s.shopee.co.id/5VLlFD7dZe"
-    percentage: 25.0
+    percentage: 20.0
 
-  - name: "Lazada"
-    url: "https://atid.me/000498002lt5"
-    percentage: 12.0
+  - name: "Enaba"
+    url: "https://atid.me/00cg9p002lt5"
+    percentage: 8.0
 
   - name: "Lazada Kol"
     url: "https://atid.me/0082ly002lt5"
@@ -35,9 +35,9 @@ products:
 
   - name: "Ecomobi - Tiktok"
     url: "https://goeco.mobi/IZ8PRcbo?sub1={siteid}&sub2={sub_id}&sub3={type_ads}&click_id={clickid}"
-    percentage: 10.0
+    percentage: 12.0
 
-  # Long-tail (total ~30%)
+  # Long-tail (total ~37%)
   - name: "Blibli"
     url: "https://atid.me/00dh9j002lt5"
     percentage: 5.0
@@ -56,12 +56,12 @@ products:
 
   - name: "AXA Mandiri"
     url: "https://atid.me/00i1h5002lt5"
-    percentage: 8.0
+    percentage: 7.0
 
   - name: "Unilever Flagship Store Lazada"
     url: "https://atid.me/go/Fn1mxkYU"
-    percentage: 3.0
+    percentage: 6.0
 
   - name: "Skintific Lazada"
     url: "https://atid.me/go/lmEds0p7"
-    percentage: 3.0
+    percentage: 6.0

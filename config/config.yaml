@@ -38,9 +38,13 @@ products:
     percentage: 12.0
 
   # Long-tail (total ~37%)
-  - name: "Blibli"
+  - name: "Blibli - Involve"
+    url: "https://invl.me/clmyaj8?url=https%3A%2F%2Fwww.blibli.com%2F"
+    percentage: 6.0
+
+  - name: "Blibli - Accesstrade"
     url: "https://atid.me/00dh9j002lt5"
-    percentage: 5.0
+    percentage: 4.0
 
   - name: "EIGER"
     url: "https://atid.me/004vll002lt5"

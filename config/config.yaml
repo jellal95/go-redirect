@@ -1,71 +1,70 @@
 propeller:
   aid: "YOUR_AID"
   tid: "YOUR_TID"
-  postback_url: 'http://ad.propellerads.com/conversion.php'
+  postback_url: "http://ad.propellerads.com/conversion.php"
 
 galaksion:
   cid: "46704"
-  postback_url: 'http://postback.report/postback'
+  postback_url: "http://postback.report/postback"
 
 popcash:
   aid: "494669"
   type: "1"
-  postback_url: 'https://ct.popcash.net/click'
+  postback_url: "https://ct.popcash.net/click"
 
 products:
+  # --- Direct offers ---
   - name: "Shopee Direct - Cetaphil"
     url: "https://s.shopee.co.id/5VLlFD7dZe"
-    percentage: 20.0
-
-  - name: "Enaba"
-    url: "https://atid.me/00cg9p002lt5"
-    percentage: 8.0
-
-  - name: "Lazada Kol"
-    url: "https://atid.me/0082ly002lt5"
-    percentage: 8.0
+    percentage: 28.0
 
   - name: "Lazada Direct - Product Recomendation"
     url: "https://c.lazada.co.id/t/c.1AtgLz?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 7.0
+    percentage: 6.0
 
   - name: "Lazada Direct - 9.9"
     url: "https://c.lazada.co.id/t/c.1AtgpL?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 8.0
+    percentage: 7.0
 
+  # --- Ecomobi offers ---
   - name: "Ecomobi - Tiktok"
     url: "https://goeco.mobi/IZ8PRcbo?sub1={siteid}&sub2={sub_id}&sub3={type_ads}&click_id={clickid}"
-    percentage: 12.0
+    percentage: 7.0
 
-  # Long-tail (total ~37%)
-  - name: "Blibli - Involve"
+  # --- Involve offers ---
+  - name: "Involve - Blibli"
     url: "https://invl.me/clmyaj8?url=https%3A%2F%2Fwww.blibli.com%2F"
+    percentage: 5.0
+
+  - name: "Involve - Traveloka"
+    url: "https://invl.me/clmyea0"
+    percentage: 5.0
+
+  # --- Accesstrade offers ---
+  - name: "Baseus CPS - Accesstrade"
+    url: "https://atid.me/00n7d5002lt5"
+    percentage: 10.0
+
+  - name: "Enaba - Accesstrade"
+    url: "https://atid.me/00cg9p002lt5"
     percentage: 6.0
+
+  - name: "Lazada Kol - Accesstrade"
+    url: "https://atid.me/0082ly002lt5"
+    percentage: 6.0
+
+  - name: "Tiket - Accesstrade"
+    url: "https://atid.me/0082ly0027gt"
+    percentage: 4.0
+
+  - name: "EIGER - Accesstrade"
+    url: "https://atid.me/004vll002lt5"
+    percentage: 3.0
 
   - name: "Blibli - Accesstrade"
     url: "https://atid.me/00dh9j002lt5"
-    percentage: 4.0
+    percentage: 2.0
 
-  - name: "EIGER"
-    url: "https://atid.me/004vll002lt5"
-    percentage: 4.0
-
-  - name: "Tiket"
-    url: "https://atid.me/0082ly0027gt"
-    percentage: 5.0
-
-  - name: "Samsung"
-    url: "https://atid.me/go/6YSjiEJo"
-    percentage: 4.0
-
-  - name: "AXA Mandiri"
+  - name: "AXA Mandiri - Accesstrade"
     url: "https://atid.me/00i1h5002lt5"
-    percentage: 7.0
-
-  - name: "Unilever Flagship Store Lazada"
-    url: "https://atid.me/go/Fn1mxkYU"
-    percentage: 6.0
-
-  - name: "Skintific Lazada"
-    url: "https://atid.me/go/lmEds0p7"
-    percentage: 6.0
+    percentage: 10.0

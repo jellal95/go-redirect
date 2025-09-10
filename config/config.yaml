@@ -13,49 +13,57 @@ popcash:
   postback_url: "https://ct.popcash.net/click"
 
 products:
-  # --- Direct offers ---
+  # --- Accesstrade CPS Shopee ---
+  - name: "Baseus CPS Shopee - Accesstrade"
+    url: "https://atid.me/00n7d5002lt5"
+    percentage: 25.0
+
+  - name: "Mash CPS Shopee - Accesstrade"
+    url: "https://atid.me/00gfhz002lt5"
+    percentage: 25.0
+
+  - name: "Happy Call CPS Shopee - Accesstrade"
+    url: "https://atid.me/00eyf5002lt5"
+    percentage: 10.0
+
+  # --- Direct Shopee & Lazada ---
   - name: "Shopee Direct - Cetaphil"
     url: "https://s.shopee.co.id/5VLlFD7dZe"
-    percentage: 28.0
+    percentage: 8.0
 
-  - name: "Lazada Direct - Product Recomendation"
+  - name: "Lazada Direct - Product Recommendation"
     url: "https://c.lazada.co.id/t/c.1AtgLz?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 6.0
+    percentage: 4.0
 
   - name: "Lazada Direct - 9.9"
     url: "https://c.lazada.co.id/t/c.1AtgpL?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 7.0
+    percentage: 3.0
 
-  # --- Ecomobi offers ---
+  # --- Ecomobi & Involve ---
   - name: "Ecomobi - Tiktok"
     url: "https://goeco.mobi/IZ8PRcbo?sub1={siteid}&sub2={sub_id}&sub3={type_ads}&click_id={clickid}"
-    percentage: 7.0
+    percentage: 5.0
 
-  # --- Involve offers ---
   - name: "Involve - Blibli"
     url: "https://invl.me/clmyaj8?url=https%3A%2F%2Fwww.blibli.com%2F"
-    percentage: 5.0
+    percentage: 3.0
 
   - name: "Involve - Traveloka"
     url: "https://invl.me/clmyea0"
-    percentage: 5.0
+    percentage: 2.0
 
-  # --- Accesstrade offers ---
-  - name: "Baseus CPS - Accesstrade"
-    url: "https://atid.me/00n7d5002lt5"
-    percentage: 10.0
-
+  # --- Accesstrade non-Shopee ---
   - name: "Enaba - Accesstrade"
     url: "https://atid.me/00cg9p002lt5"
-    percentage: 6.0
+    percentage: 3.0
 
   - name: "Lazada Kol - Accesstrade"
     url: "https://atid.me/0082ly002lt5"
-    percentage: 6.0
+    percentage: 3.0
 
   - name: "Tiket - Accesstrade"
     url: "https://atid.me/0082ly0027gt"
-    percentage: 4.0
+    percentage: 3.0
 
   - name: "EIGER - Accesstrade"
     url: "https://atid.me/004vll002lt5"
@@ -67,4 +75,4 @@ products:
 
   - name: "AXA Mandiri - Accesstrade"
     url: "https://atid.me/00i1h5002lt5"
-    percentage: 10.0
+    percentage: 1.0

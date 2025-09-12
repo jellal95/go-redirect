@@ -12,7 +12,7 @@ import (
 
 func PreSaleHandler(c *fiber.Ctx) error {
 	// Always load from CSV as per requirement
-	products, err := utils.LoadProductsCSV("config\\config.csv")
+	products, err := utils.LoadProductsCSV("config/config.csv")
 	if err != nil {
 		log.Println("failed to load CSV products:", err)
 	}

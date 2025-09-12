@@ -13,10 +13,10 @@ popcash:
   postback_url: "https://ct.popcash.net/click"
 
 products:
-  # --- Accesstrade CPS Shopee ---
+  # --- Accesstrade CPS Shopee (Fokus utama) ---
   - name: "Baseus CPS Shopee - Accesstrade"
     url: "https://atid.me/00n7d5002lt5"
-    percentage: 25.0
+    percentage: 30.0
 
   - name: "Mash CPS Shopee - Accesstrade"
     url: "https://atid.me/00gfhz002lt5"
@@ -26,52 +26,56 @@ products:
     url: "https://atid.me/00eyf5002lt5"
     percentage: 10.0
 
-  # --- Direct Shopee & Lazada ---
   - name: "Shopee Direct - Cetaphil"
     url: "https://s.shopee.co.id/5VLlFD7dZe"
-    percentage: 8.0
+    percentage: 10.0
 
+  # --- Lazada (turun jadi kecil) ---
   - name: "Lazada Direct - Product Recommendation"
     url: "https://c.lazada.co.id/t/c.1AtgLz?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 4.0
+    percentage: 2.0
 
   - name: "Lazada Direct - 9.9"
     url: "https://c.lazada.co.id/t/c.1AtgpL?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 3.0
-
-  # --- Ecomobi & Involve ---
-  - name: "Ecomobi - Tiktok"
-    url: "https://goeco.mobi/IZ8PRcbo?sub1={siteid}&sub2={sub_id}&sub3={type_ads}&click_id={clickid}"
-    percentage: 5.0
-
-  - name: "Involve - Blibli"
-    url: "https://invl.me/clmyaj8?url=https%3A%2F%2Fwww.blibli.com%2F"
-    percentage: 3.0
-
-  - name: "Involve - Traveloka"
-    url: "https://invl.me/clmyea0"
     percentage: 2.0
-
-  # --- Accesstrade non-Shopee ---
-  - name: "Enaba - Accesstrade"
-    url: "https://atid.me/00cg9p002lt5"
-    percentage: 3.0
 
   - name: "Lazada Kol - Accesstrade"
     url: "https://atid.me/0082ly002lt5"
-    percentage: 3.0
+    percentage: 2.0
+
+  # --- Ecomobi ---
+  - name: "Ecomobi - Blibli"
+    url: "https://goeco.mobi/aG4Vjz9b?sub1={siteid}&sub2={sub_id}&sub3={type_ads}&click_id={clickid}"
+    percentage: 2.0
+
+  - name: "Ecomobi - Tiktok Produk B"
+    url: "PASTE_LINK_BARU_DISINI"
+    percentage: 2.0
+
+  # --- Sisanya non-priority (1% buat tracking/test) ---
+  - name: "Involve - Blibli"
+    url: "https://invl.me/clmyaj8?url=https%3A%2F%2Fwww.blibli.com%2F"
+    percentage: 1.0
+
+  - name: "Involve - Traveloka"
+    url: "https://invl.me/clmyea0"
+    percentage: 1.0
+
+  - name: "Enaba - Accesstrade"
+    url: "https://atid.me/00cg9p002lt5"
+    percentage: 1.0
 
   - name: "Tiket - Accesstrade"
     url: "https://atid.me/0082ly0027gt"
-    percentage: 3.0
+    percentage: 1.0
 
   - name: "EIGER - Accesstrade"
     url: "https://atid.me/004vll002lt5"
-    percentage: 3.0
+    percentage: 1.0
 
   - name: "Blibli - Accesstrade"
     url: "https://atid.me/00dh9j002lt5"
-    percentage: 2.0
+    percentage: 1.0
 
   - name: "AXA Mandiri - Accesstrade"
     url: "https://atid.me/00i1h5002lt5"

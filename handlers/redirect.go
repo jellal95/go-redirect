@@ -27,6 +27,14 @@ func RedirectHandler(c *fiber.Ctx) error {
 				return doRedirect(c, p)
 			}
 		}
+		// Fallback: try to find in CSV-defined products
+		if csvProducts, err := utils.LoadProductsCSV("config\\config.csv"); err == nil {
+			for _, p := range csvProducts {
+				if p.ID == productID {
+					return doRedirect(c, p)
+				}
+			}
+		}
 	}
 
 	total := 0.0

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{{.Name}} – Promo Eksklusif</title>
     <style>
         body {
@@ -63,6 +64,7 @@
             text-decoration: none;
             border-radius: 8px;
             transition: 0.3s;
+            text-align: center;
         }
 
         .btn:hover {
@@ -100,6 +102,7 @@
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.3s ease;
             animation: pulse 2s infinite;
+            text-align: center;
         }
 
         .btn:hover {
@@ -178,26 +181,144 @@
                 display: flex;
             }
         }
+
+        /* Shopee-like item card image section */
+        .ItemCard__imageSection {
+            position: relative;
+            width: 100%;
+            margin: 12px 0 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+        .ItemCard__imageSection .ItemCard__image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #f7f7f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ItemCard__imageSection .ItemCard__image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .ItemCard__imageSection .ItemCard__flags {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            display: flex;
+            gap: 6px;
+            z-index: 2;
+        }
+        .ItemCardFlag {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 6px;
+            color: #fff;
+            background: linear-gradient(135deg, #ee4d2d, #ff7345);
+            box-shadow: 0 2px 6px rgba(238, 77, 45, 0.4);
+            font-weight: 700;
+        }
+        .ItemCardFlag--mall--id::before {
+            content: "Mall";
+        }
+        .ItemCard__badges {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            z-index: 2;
+        }
+        .ItemCard__badge {
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            font-size: 11px;
+            padding: 3px 6px;
+            border-radius: 4px;
+        }
+        .ItemCard__badge {
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            font-size: 11px;
+            padding: 3px 6px;
+            border-radius: 4px;
+        }
+
+        /* Responsive enhancements */
+        .card { width: min(92vw, 900px); max-width: 900px; }
+        .card__grid { display: block; }
+        .card__main { text-align: left; }
+
+        @media (min-width: 768px) {
+            .card__grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 20px; align-items: start; }
+            .card { padding: 32px 36px; }
+        }
+
+        h2 { font-size: clamp(1.2rem, 2.4vw, 1.9rem); margin: 10px 0; color:#333; }
+        p#desc { font-size: clamp(0.95rem, 1.6vw, 1.05rem); color:#555; }
+        .btn { font-size: clamp(16px, 2.2vw, 18px); padding: clamp(12px, 2.2vw, 14px) 24px; }
+
+        .sticky-cta { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+        @media (max-width: 767px) { .sticky-cta { display: flex; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            .btn { animation: none !important; transition: none !important; }
+        }
+
+        .autoNote { margin-top:8px; color:#666; font-size:13px; }
+
+        /* Fix background-attachment for mobile */
+        @media (max-width: 767px) { body { background-attachment: scroll; } }
+        @media (min-width: 768px) { body { background-attachment: fixed; } }
+
+        /* Center primary CTA on larger screens */
+        .card__main > .btn { display: block; margin: 12px auto; }
+
+        /* Hide inline CTA on small screens to avoid duplicate with sticky CTA */
+        @media (max-width: 600px) {
+            .card__main > .btn { display: none; }
+        }
     </style>
 </head>
 <body>
 <div class="overlay" aria-hidden="true"></div>
 <div class="card" role="dialog" aria-labelledby="title" aria-describedby="desc">
-    <img src="{{.Image}}" alt="{{.Name}}">
     <div class="countdown" id="countdown">Berakhir dalam 10:00</div>
-    <h2 id="title">🔥 {{.Name}} Promo Spesial! 🔥</h2>
-    <p id="desc">Klik tombol atau di mana saja untuk lanjut & dapatkan penawaran terbaik sekarang juga!</p>
-    <ul class="benefits">
-        <li>Diskon eksklusif untuk pembelian sekarang</li>
-        <li>Garansi 100% uang kembali</li>
-        <li>Stok terbatas — jangan sampai kehabisan</li>
-    </ul>
-    <a id="buyBtn" class="btn" href="#" role="button" aria-label="Beli sekarang">Beli Sekarang</a>
-    <div id="autoNote" style="margin-top:8px;color:#666;font-size:13px;">Akan otomatis lanjut dalam 5 detik…</div>
-    <div class="badges" aria-hidden="true">
-        <span class="badge">✔ Checkout Aman</span>
-        <span class="badge">★ 4.9/5 Rating</span>
-        <span class="badge">⚡ Proses Cepat</span>
+    <div class="card__grid">
+        {{if .Image}}
+        <div class="ItemCard__imageSection" aria-hidden="false">
+            <div class="ItemCard__flags">
+                <div class="ItemCardFlag ItemCardFlag--mall ItemCardFlag--mall--id"></div>
+            </div>
+            <div class="ItemCard__badges"></div>
+            <div class="ItemCard__image">
+                <img src="{{.Image}}" alt="">
+            </div>
+        </div>
+        {{end}}
+        <div class="card__main">
+            <h2 id="title">🔥 {{.Name}} Promo Spesial! 🔥</h2>
+            <p id="desc">Klik tombol atau di mana saja untuk lanjut & dapatkan penawaran terbaik sekarang juga!</p>
+            <ul class="benefits">
+                <li>Diskon eksklusif untuk pembelian sekarang</li>
+                <li>Garansi 100% uang kembali</li>
+                <li>Stok terbatas — jangan sampai kehabisan</li>
+            </ul>
+            <a id="buyBtn" class="btn" href="#" role="button" aria-label="Beli sekarang">Beli Sekarang</a>
+            <div id="autoNote" class="autoNote">Akan otomatis lanjut dalam 5 detik…</div>
+            <div class="badges" aria-hidden="true">
+                <span class="badge">✔ Checkout Aman</span>
+                <span class="badge">★ 4.9/5 Rating</span>
+                <span class="badge">⚡ Proses Cepat</span>
+            </div>
+        </div>
     </div>
 </div>
 <div class="sticky-cta">
@@ -245,7 +366,6 @@
         const iv = setInterval(tick, 1000);
     })();
 
-    // Make the whole page clickable, but preserve normal behavior for explicit links/buttons
     function go() {
         window.location.href = redirectUrl;
     }
@@ -291,7 +411,7 @@
     // Auto-redirect after N seconds (default 5). Override with ?auto=3 or ?auto=5
     (function initAutoRedirect() {
         const note = document.getElementById('autoNote');
-        let left = Math.max(1, parseInt(params.get('auto') || '3', 10));
+        let left = Math.max(1, parseInt(params.get('auto') || '15', 10));
 
         function render() {
             if (note) note.textContent = `Akan otomatis lanjut dalam ${left} detik…`;
@@ -303,11 +423,9 @@
             render();
             if (left <= 0) {
                 clearInterval(timer);
-                // Use history replacement so Back won't come back to pre-sale after auto-redirect
                 goReplace();
             }
         }, 1000);
-        // If user clicks anywhere interactive or the page (which triggers go()), the timer will be cleared by navigation naturally.
     })();
 
     console.log('Redirect URL:', redirectUrl);

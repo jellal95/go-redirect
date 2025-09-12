@@ -8,11 +8,14 @@ const (
 )
 
 type Product struct {
-	ID         string  `json:"id" yaml:"id"`
-	Name       string  `json:"name" yaml:"name"`
-	URL        string  `json:"url" yaml:"url"`
-	Image      string  `json:"image" yaml:"image"`
-	Percentage float64 `json:"percentage" yaml:"percentage"`
+	ID           string  `json:"id" yaml:"id"`
+	Name         string  `json:"name" yaml:"name"`
+	Description  string  `json:"description" yaml:"description"`
+	URL          string  `json:"url" yaml:"url"`
+	Image        string  `json:"image" yaml:"image"`
+	Percentage   float64 `json:"percentage" yaml:"percentage"`
+	Komisi       string  `json:"komisi" yaml:"komisi"`
+	KomisiHingga string  `json:"komisi_hingga" yaml:"komisi_hingga"`
 }
 
 type GeoInfo struct {

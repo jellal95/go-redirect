@@ -43,6 +43,7 @@ func main() {
 
 	app.Get("/pre-sale", handlers.PreSaleHandler)
 	app.Get("/article", handlers.ArticleHandler)
+	app.Get("/main", handlers.MainHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {

@@ -1,13 +1,17 @@
 package handlers
 
 import (
+	"bytes"
+	"encoding/json"
 	"log"
 	"math/rand/v2"
+	"time"
 
 	"go-redirect/models"
 	"go-redirect/utils"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/mssola/user_agent"
 )
 
 func PreSaleHandler(c *fiber.Ctx) error {
@@ -43,12 +47,49 @@ func PreSaleHandler(c *fiber.Ctx) error {
 		}
 	}
 
-	// Ensure Name has a default if not provided
-	name := selected.Name
+	// --- Logging Impression ---
+	ip := c.Get("X-Forwarded-For")
+	if ip == "" {
+		ip = c.Get("X-Real-Ip")
+	}
+	if ip == "" {
+		ip = c.IP()
+	}
 
+	ua := user_agent.New(c.Get("User-Agent"))
+	browser, _ := ua.Browser()
+	osName := ua.OS()
+	device := "Desktop"
+	if ua.Mobile() {
+		device = "Mobile"
+	}
+
+	entry := models.LogEntry{
+		Timestamp:   time.Now().Format(time.RFC3339),
+		ProductName: selected.Name,
+		URL:         c.OriginalURL(),
+		IP:          ip,
+		UserAgent:   c.Get("User-Agent"),
+		Browser:     browser,
+		OS:          osName,
+		Device:      device,
+		Referer:     c.Get("Referer"),
+		QueryRaw:    string(c.Request().URI().QueryString()),
+	}
+
+	// save ke memori / file
+	Logs = append(Logs, entry)
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(entry); err == nil {
+		log.Println("PreSale Log (view):", buf.String())
+	}
+
+	// --- Render Page ---
 	return c.Render("pre-sale", fiber.Map{
 		"ID":           selected.ID,
-		"Name":         name,
+		"Name":         selected.Name,
 		"Description":  selected.Description,
 		"Image":        selected.Image,
 		"Komisi":       selected.Komisi,

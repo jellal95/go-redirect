@@ -1,34 +1,21 @@
-propeller:
-  aid: "YOUR_AID"
-  tid: "YOUR_TID"
-  postback_url: "http://ad.propellerads.com/conversion.php"
-
-galaksion:
-  cid: "46704"
-  postback_url: "http://postback.report/postback"
-
-popcash:
-  aid: "494669"
-  type: "1"
-  postback_url: "https://ct.popcash.net/click"
-
 products:
-  # --- Accesstrade CPS Shopee (Fokus utama) ---
+  # --- Shopee Direct (Prioritas Utama) ---
+  - name: "Shopee Direct - Cetaphil"
+    url: "https://s.shopee.co.id/5VLlFD7dZe"
+    percentage: 30.0
+
+  # --- Accesstrade CPS Shopee (Prioritas Kedua) ---
   - name: "Baseus CPS Shopee - Accesstrade"
     url: "https://atid.me/00n7d5002lt5"
-    percentage: 30.0
+    percentage: 20.0
 
   - name: "Mash CPS Shopee - Accesstrade"
     url: "https://atid.me/00gfhz002lt5"
-    percentage: 25.0
+    percentage: 15.0
 
   - name: "Happy Call CPS Shopee - Accesstrade"
     url: "https://atid.me/00eyf5002lt5"
-    percentage: 10.0
-
-  - name: "Shopee Direct - Cetaphil"
-    url: "https://s.shopee.co.id/5VLlFD7dZe"
-    percentage: 10.0
+    percentage: 15.0
 
   # --- Lazada (turun jadi kecil) ---
   - name: "Lazada Direct - Product Recommendation"
@@ -41,7 +28,7 @@ products:
 
   - name: "Lazada Kol - Accesstrade"
     url: "https://atid.me/0082ly002lt5"
-    percentage: 2.0
+    percentage: 1.0
 
   # --- Ecomobi ---
   - name: "Ecomobi - Blibli"
@@ -52,7 +39,7 @@ products:
     url: "PASTE_LINK_BARU_DISINI"
     percentage: 2.0
 
-  # --- Sisanya non-priority (1% buat tracking/test) ---
+  # --- Sisanya non-priority (tracking/test) ---
   - name: "Involve - Blibli"
     url: "https://invl.me/clmyaj8?url=https%3A%2F%2Fwww.blibli.com%2F"
     percentage: 1.0

@@ -1,13 +1,17 @@
 products:
   # --- Shopee Direct (Prioritas Utama) ---
-  - name: "Shopee Direct - Cetaphil"
+  - name: "Shopee Direct - Anwar"
     url: "https://s.shopee.co.id/5VLlFD7dZe"
-    percentage: 30.0
+    percentage: 25.0
+
+  - name: "Shopee Direct - Rima"
+    url: "https://s.shopee.co.id/40X6O25UZO"
+    percentage: 25.0
 
   # --- Accesstrade CPS Shopee (Prioritas Kedua) ---
   - name: "Baseus CPS Shopee - Accesstrade"
     url: "https://atid.me/00n7d5002lt5"
-    percentage: 20.0
+    percentage: 15.0
 
   - name: "Mash CPS Shopee - Accesstrade"
     url: "https://atid.me/00gfhz002lt5"
@@ -15,9 +19,9 @@ products:
 
   - name: "Happy Call CPS Shopee - Accesstrade"
     url: "https://atid.me/00eyf5002lt5"
-    percentage: 15.0
+    percentage: 10.0
 
-  # --- Lazada (turun jadi kecil) ---
+  # --- Lazada (minor, tracking/test) ---
   - name: "Lazada Direct - Product Recommendation"
     url: "https://c.lazada.co.id/t/c.1AtgLz?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
     percentage: 2.0

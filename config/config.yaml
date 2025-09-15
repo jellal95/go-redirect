@@ -1,34 +1,58 @@
+propeller:
+  aid: "YOUR_AID"
+  tid: "YOUR_TID"
+  postback_url: "http://ad.propellerads.com/conversion.php"
+
+galaksion:
+  cid: "46704"
+  postback_url: "http://postback.report/postback"
+
+popcash:
+  aid: "494669"
+  type: "1"
+  postback_url: "https://ct.popcash.net/click"
+
 products:
-  # --- Shopee Direct / High Priority ---
   - name: "Shopee Direct - Anwar"
     url: "https://s.shopee.co.id/5VLlFD7dZe"
-    percentage: 30
+    percentage: 28.0
 
   - name: "Shopee Direct - Rima"
     url: "https://s.shopee.co.id/40X6O25UZO"
-    percentage: 30
+    percentage: 28.0
 
   - name: "Shopee ID KOL Tier 1 - Accesstrade"
     url: "https://atid.me/0095ot002lt5"
-    percentage: 30
+    percentage: 24.0
 
-  # --- Lazada / Minor tracking/test ---
+  - name: "Baseus CPS Shopee - Accesstrade"
+    url: "https://atid.me/00n7d5002lt5"
+    percentage: 6.0
+
+  - name: "Mash CPS Shopee - Accesstrade"
+    url: "https://atid.me/00gfhz002lt5"
+    percentage: 6.0
+
+  - name: "Happy Call CPS Shopee - Accesstrade"
+    url: "https://atid.me/00eyf5002lt5"
+    percentage: 6.0
+
   - name: "Lazada Direct - Product Recommendation"
     url: "https://c.lazada.co.id/t/c.1AtgLz?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 2
+    percentage: 1.0
 
   - name: "Lazada Direct - 9.9"
     url: "https://c.lazada.co.id/t/c.1AtgpL?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 2
+    percentage: 1.0
 
   - name: "Lazada Kol - Accesstrade"
     url: "https://atid.me/0082ly002lt5"
-    percentage: 1
+    percentage: 1.0
 
-  - name: "Ecomobi - Tiktok Produk B"
-    url: "PASTE_LINK_BARU_DISINI"
-    percentage: 3
+  - name: "Ecomobi - Tiktok Shop"
+    url: "https://goeco.mobi/IZ8PRcbo"
+    percentage: 3.0
 
-  - name: "Involve - Traveloka"
+  - name: "Traveloka - Involve"
     url: "https://invl.me/clmyea0"
-    percentage: 2
+    percentage: 2.0

@@ -23,3 +23,8 @@ type Popcash struct {
 	Type        string `yaml:"type"`
 	PostbackURL string `yaml:"postback_url"`
 }
+
+type ClickAdilla struct {
+	Token       string `yaml:"token"`
+	PostbackURL string `yaml:"postback_url"`
+}

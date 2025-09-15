@@ -64,8 +64,16 @@ func PreSaleHandler(c *fiber.Ctx) error {
 		device = "Mobile"
 	}
 
+	qp, _ := json.Marshal(c.Queries())
+	hd := make(map[string]string)
+	c.Request().Header.VisitAll(func(k, v []byte) {
+		hd[string(k)] = string(v)
+	})
+	hdJson, _ := json.Marshal(hd)
+
 	entry := models.LogEntry{
-		Timestamp:   time.Now().Format(time.RFC3339),
+		Type:        models.TypeRoutePreSale,
+		Timestamp:   time.Now(),
 		ProductName: selected.Name,
 		URL:         c.OriginalURL(),
 		IP:          ip,
@@ -75,9 +83,13 @@ func PreSaleHandler(c *fiber.Ctx) error {
 		Device:      device,
 		Referer:     c.Get("Referer"),
 		QueryRaw:    string(c.Request().URI().QueryString()),
+		QueryParams: qp,
+		Headers:     hdJson,
+	}
+	if err := utils.DB.Create(&entry).Error; err != nil {
+		log.Println("Failed insert pre-sale log:", err)
 	}
 
-	// save ke memori / file
 	Logs = append(Logs, entry)
 	buf := &bytes.Buffer{}
 	enc := json.NewEncoder(buf)

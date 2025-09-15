@@ -10,9 +10,24 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using system environment")
+	}
+
+	_, err := utils.InitDB()
+	if err != nil {
+		panic(err)
+	}
+
+	if err := utils.Migrate(); err != nil {
+		panic(err)
+	}
+
 	engine := html.New("./views", ".html")
 	app := fiber.New(fiber.Config{
 		Views: engine,

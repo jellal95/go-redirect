@@ -129,8 +129,13 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	if err != nil || displayURL == "" {
 		displayURL = finalURL
 	}
+	qp, _ := json.Marshal(queryParams)
+	hd, _ := json.Marshal(headers)
+	geoJson, _ := json.Marshal(geoInfo)
+
 	entry := models.LogEntry{
-		Timestamp:   time.Now().Format(time.RFC3339),
+		Type:        models.TypeRouteRedirect,
+		Timestamp:   time.Now(),
 		ProductName: product.Name,
 		URL:         displayURL,
 		IP:          ip,
@@ -140,9 +145,13 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		Device:      device,
 		Referer:     c.Get("Referer"),
 		QueryRaw:    string(c.Request().URI().QueryString()),
-		QueryParams: queryParams,
-		Headers:     headers,
-		Geo:         geoInfo,
+		QueryParams: qp,
+		Headers:     hd,
+		Geo:         geoJson,
+	}
+
+	if err := utils.DB.Create(&entry).Error; err != nil {
+		log.Println("Failed insert redirect log:", err)
 	}
 
 	Logs = append(Logs, entry)

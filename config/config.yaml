@@ -12,6 +12,10 @@ popcash:
   type: "1"
   postback_url: "https://ct.popcash.net/click"
 
+clickadilla:
+  postback_url: "https://tracking.clickadilla.com/in/postbacks/"
+  token: "m96gRV"
+
 products:
   - name: "Shopee Direct - Anwar"
     url: "https://s.shopee.co.id/5VLlFD7dZe"

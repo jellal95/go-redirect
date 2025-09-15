@@ -1,10 +1,20 @@
 package models
 
+import (
+	"time"
+
+	"gorm.io/datatypes"
+)
+
 // Ad network type identifiers used in query param `type_ads` and postbacks.
 const (
-	AdTypePropeller = "1" // PropellerAds
-	AdTypeGalaksion = "2" // Galaksion
-	AdTypePopcash   = "3" // Popcash
+	AdTypePropeller   = "1" // PropellerAds
+	AdTypeGalaksion   = "2" // Galaksion
+	AdTypePopcash     = "3" // Popcash
+	AdTypeClickAdilla = "4"
+	TypeRouteRedirect = "redirect"
+	TypeRoutePreSale  = "pre-sale"
+	TypePostback      = "postback"
 )
 
 type Product struct {
@@ -28,17 +38,19 @@ type GeoInfo struct {
 }
 
 type LogEntry struct {
-	Timestamp   string            `json:"timestamp"`
-	ProductName string            `json:"product_name"`
-	URL         string            `json:"url"`
-	IP          string            `json:"ip"`
-	UserAgent   string            `json:"user_agent"`
-	Browser     string            `json:"browser"`
-	OS          string            `json:"os"`
-	Device      string            `json:"device"`
-	Referer     string            `json:"referer"`
-	QueryRaw    string            `json:"query_raw"`
-	QueryParams map[string]string `json:"query_params"`
-	Headers     map[string]string `json:"headers"`
-	Geo         GeoInfo           `json:"geo"`
+	ID          uint      `gorm:"primaryKey"`
+	Type        string    `gorm:"index"` // "redirect" / "pre-sale"
+	Timestamp   time.Time `gorm:"index"`
+	ProductName string    `gorm:"index"`
+	URL         string
+	IP          string
+	UserAgent   string
+	Browser     string
+	OS          string
+	Device      string
+	Referer     string
+	QueryRaw    string
+	QueryParams datatypes.JSON `gorm:"type:jsonb"`
+	Headers     datatypes.JSON `gorm:"type:jsonb"`
+	Geo         datatypes.JSON `gorm:"type:jsonb"`
 }

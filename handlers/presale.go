@@ -86,9 +86,9 @@ func PreSaleHandler(c *fiber.Ctx) error {
 		QueryParams: qp,
 		Headers:     hdJson,
 	}
-	if err := utils.DB.Create(&entry).Error; err != nil {
-		log.Println("Failed insert pre-sale log:", err)
-	}
+	//if err := utils.DB.Create(&entry).Error; err != nil {
+	//	log.Println("Failed insert pre-sale log:", err)
+	//}
 
 	Logs = append(Logs, entry)
 	buf := &bytes.Buffer{}

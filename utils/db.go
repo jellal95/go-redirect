@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+//var DB *gorm.DB
 
 func InitDB() (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
@@ -26,7 +26,7 @@ func InitDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	DB = db
+	//DB = db
 	log.Println("Connected to database")
 
 	return db, nil

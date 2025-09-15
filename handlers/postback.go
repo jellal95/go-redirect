@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"encoding/json"
 	"go-redirect/models"
-	"go-redirect/utils"
 	"log"
 	"net/http"
 	"net/url"
@@ -77,19 +75,19 @@ func ForwardPostbackToPropeller(subID, payout string) {
 	}
 
 	// === Insert Log ===
-	params := map[string]string{"sub_id": subID, "payout": payout}
-	qp, _ := json.Marshal(params)
+	//params := map[string]string{"sub_id": subID, "payout": payout}
+	//qp, _ := json.Marshal(params)
 
-	entry := models.LogEntry{
-		Type:        models.TypePostback,
-		Timestamp:   time.Now(),
-		ProductName: "PropellerAds",
-		URL:         fullURL,
-		QueryParams: qp,
-	}
-	if err := utils.DB.Create(&entry).Error; err != nil {
-		log.Println("Failed insert Propeller postback log:", err)
-	}
+	//entry := models.LogEntry{
+	//	Type:        models.TypePostback,
+	//	Timestamp:   time.Now(),
+	//	ProductName: "PropellerAds",
+	//	URL:         fullURL,
+	//	QueryParams: qp,
+	//}
+	//if err := utils.DB.Create(&entry).Error; err != nil {
+	//	log.Println("Failed insert Propeller postback log:", err)
+	//}
 
 	// === Forward ===
 	_, err := http.Get(fullURL)
@@ -117,19 +115,19 @@ func ForwardPostbackToGalaksion(subID string) {
 	}
 
 	// === Insert Log ===
-	params := map[string]string{"click_id": subID}
-	qp, _ := json.Marshal(params)
+	//params := map[string]string{"click_id": subID}
+	//qp, _ := json.Marshal(params)
 
-	entry := models.LogEntry{
-		Type:        models.TypePostback,
-		Timestamp:   time.Now(),
-		ProductName: "Galaksion",
-		URL:         fullURL,
-		QueryParams: qp,
-	}
-	if err := utils.DB.Create(&entry).Error; err != nil {
-		log.Println("Failed insert Galaksion postback log:", err)
-	}
+	//entry := models.LogEntry{
+	//	Type:        models.TypePostback,
+	//	Timestamp:   time.Now(),
+	//	ProductName: "Galaksion",
+	//	URL:         fullURL,
+	//	QueryParams: qp,
+	//}
+	//if err := utils.DB.Create(&entry).Error; err != nil {
+	//	log.Println("Failed insert Galaksion postback log:", err)
+	//}
 
 	// === Forward ===
 	_, err := http.Get(fullURL)
@@ -175,19 +173,19 @@ func ForwardPostbackToPopcash(subID, payout string) {
 	}
 
 	// === Insert Log ===
-	params := map[string]string{"clickid": subID, "payout": payout}
-	qp, _ := json.Marshal(params)
+	//params := map[string]string{"clickid": subID, "payout": payout}
+	//qp, _ := json.Marshal(params)
 
-	entry := models.LogEntry{
-		Type:        models.TypePostback,
-		Timestamp:   time.Now(),
-		ProductName: "Popcash",
-		URL:         fullURL,
-		QueryParams: qp,
-	}
-	if err := utils.DB.Create(&entry).Error; err != nil {
-		log.Println("Failed insert Popcash postback log:", err)
-	}
+	//entry := models.LogEntry{
+	//	Type:        models.TypePostback,
+	//	Timestamp:   time.Now(),
+	//	ProductName: "Popcash",
+	//	URL:         fullURL,
+	//	QueryParams: qp,
+	//}
+	//if err := utils.DB.Create(&entry).Error; err != nil {
+	//	log.Println("Failed insert Popcash postback log:", err)
+	//}
 
 	// === Forward ===
 	_, err := http.Get(fullURL)
@@ -229,19 +227,19 @@ func ForwardPostbackToClickAdilla(subID, payout string, data map[string]string) 
 	}
 
 	// === Simpan log ke DB ===
-	qp, _ := json.Marshal(data)
+	//qp, _ := json.Marshal(data)
 
-	entry := models.LogEntry{
-		Type:        models.TypePostback,
-		Timestamp:   time.Now(),
-		ProductName: "ClickAdilla",
-		URL:         fullURL,
-		QueryParams: qp,
-	}
+	//entry := models.LogEntry{
+	//	Type:        models.TypePostback,
+	//	Timestamp:   time.Now(),
+	//	ProductName: "ClickAdilla",
+	//	URL:         fullURL,
+	//	QueryParams: qp,
+	//}
 
-	if err := utils.DB.Create(&entry).Error; err != nil {
-		log.Println("Failed insert ClickAdilla postback log:", err)
-	}
+	//if err := utils.DB.Create(&entry).Error; err != nil {
+	//	log.Println("Failed insert ClickAdilla postback log:", err)
+	//}
 
 	// === Forward ke ClickAdilla ===
 	_, err := http.Get(fullURL)

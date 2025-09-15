@@ -149,10 +149,10 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		Headers:     hd,
 		Geo:         geoJson,
 	}
-
-	if err := utils.DB.Create(&entry).Error; err != nil {
-		log.Println("Failed insert redirect log:", err)
-	}
+	//
+	//if err := utils.DB.Create(&entry).Error; err != nil {
+	//	log.Println("Failed insert redirect log:", err)
+	//}
 
 	Logs = append(Logs, entry)
 	buf := &bytes.Buffer{}

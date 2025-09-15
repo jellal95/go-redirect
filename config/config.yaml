@@ -15,44 +15,48 @@ popcash:
 products:
   - name: "Shopee Direct - Anwar"
     url: "https://s.shopee.co.id/5VLlFD7dZe"
-    percentage: 28.0
+    percentage: 27.0
 
   - name: "Shopee Direct - Rima"
     url: "https://s.shopee.co.id/40X6O25UZO"
-    percentage: 28.0
-
-  - name: "Shopee ID KOL Tier 1 - Accesstrade"
-    url: "https://atid.me/0095ot002lt5"
-    percentage: 24.0
-
-  - name: "Baseus CPS Shopee - Accesstrade"
-    url: "https://atid.me/00n7d5002lt5"
-    percentage: 6.0
-
-  - name: "Mash CPS Shopee - Accesstrade"
-    url: "https://atid.me/00gfhz002lt5"
-    percentage: 6.0
-
-  - name: "Happy Call CPS Shopee - Accesstrade"
-    url: "https://atid.me/00eyf5002lt5"
-    percentage: 6.0
+    percentage: 27.0
 
   - name: "Lazada Direct - Product Recommendation"
     url: "https://c.lazada.co.id/t/c.1AtgLz?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
     percentage: 1.0
 
-  - name: "Lazada Direct - 9.9"
-    url: "https://c.lazada.co.id/t/c.1AtgpL?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
+  - name: "Lazada Direct - 9.9 Mega Brand Sale - Bonus offer"
+    url: "https://c.lazada.co.id/t/c.c1Yk9D?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
     percentage: 1.0
 
-  - name: "Lazada Kol - Accesstrade"
-    url: "https://atid.me/0082ly002lt5"
+  - name: "Lazada Direct - Buy at Best Price"
+    url: "https://c.lazada.co.id/t/c.c1Yk9A?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
     percentage: 1.0
+
+  - name: "Accesstrade - Shopee ID KOL Tier 1"
+    url: "https://atid.me/0095ot002lt5"
+    percentage: 27.0
+
+  - name: "Accesstrade - Lazada Kol"
+    url: "https://atid.me/0082ly002lt5"
+    percentage: 2.0
+
+  - name: "Accesstrade- Baseus CPS Shopee"
+    url: "https://atid.me/00n7d5002lt5"
+    percentage: 2.0
+
+  - name: "Accesstrade - Mash CPS Shopee"
+    url: "https://atid.me/00gfhz002lt5"
+    percentage: 2.0
+
+  - name: "Accesstrade - Happy Call CPS Shopee"
+    url: "https://atid.me/00eyf5002lt5"
+    percentage: 2.0
 
   - name: "Ecomobi - Tiktok Shop"
     url: "https://goeco.mobi/IZ8PRcbo"
-    percentage: 3.0
+    percentage: 2.0
 
-  - name: "Traveloka - Involve"
+  - name: "Involve - Traveloka"
     url: "https://invl.me/clmyea0"
     percentage: 2.0

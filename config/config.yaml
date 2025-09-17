@@ -18,11 +18,11 @@ clickadilla:
 
 products:
   - name: "Shopee Direct - Anwar"
-    url: "https://s.shopee.co.id/5VLlFD7dZe?sub_id={click_id--{campaign_id}--{spot_id}--{type_ads}--{domain}"
+    url: "https://s.shopee.co.id/5VLlFD7dZe?sub_id={click_id}--{campaign_id}--{spot_id}--{type_ads}--{domain}"
     percentage: 25.0
 
   - name: "Shopee Direct - Rima"
-    url: "https://s.shopee.co.id/40X6O25UZO?sub_id={click_id--{campaign_id}--{spot_id}--{type_ads}--{domain}"
+    url: "https://s.shopee.co.id/40X6O25UZO?sub_id={click_id}--{campaign_id}--{spot_id}--{type_ads}--{domain}"
     percentage: 25.0
 
   - name: "Accesstrade - Shopee ID KOL Tier 1"

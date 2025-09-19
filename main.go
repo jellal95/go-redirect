@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go-redirect/geo"
 	"go-redirect/middleware"
 	"os"
 
@@ -40,7 +41,15 @@ func main() {
 	handlers.GalaksionConfig = appCfg.Galaksion
 	handlers.PopcashConfig = appCfg.Popcash
 
-	// ========== 2. Setup Bot Filter Middleware ==========
+	// ========== 2. Init Geo Database ==========
+	if err := geo.InitGeoDB("GeoLite2-City.mmdb"); err != nil {
+		utils.LogInfo(utils.LogEntry{
+			Type:  "geo_db_warning",
+			Extra: map[string]interface{}{"error": err.Error(), "message": "Geo data will show as Unknown"},
+		})
+	}
+
+	// ========== 3. Setup Bot Filter Middleware ==========
 	botCfg := middleware.BotFilterConfig{
 		AllowCountries: []string{"ID"},
 		BlacklistUA:    []string{"curl", "bot", "spider", "crawler", "python", "scrapy", "headless"},
@@ -72,25 +81,25 @@ func main() {
 		}, 1)
 	}
 
-	// ========== 3. Init Fiber Engine ==========
+	// ========== 4. Init Fiber Engine ==========
 	engine := html.New("./views", ".html")
 	app := fiber.New(fiber.Config{Views: engine})
 
-	// ========== 4. Admin endpoints (tanpa middleware) ==========
+	// ========== 5. Admin endpoints (tanpa middleware) ==========
 	app.Get("/logs", handlers.LogsHandler)
 	app.Get("/postbacks", handlers.GetPostbacks)
 
-	// ========== 5. Pasang middleware global bot filter ==========
+	// ========== 6. Pasang middleware global bot filter ==========
 	app.Use(bf.Handler())
 
-	// ========== 6. Routes lainnya ==========
+	// ========== 7. Routes lainnya ==========
 	app.Get("/", handlers.RedirectHandler)
 	app.Get("/postback", handlers.PostbackHandler)
 	app.Get("/pre-sale", handlers.PreSaleHandler)
 	app.Get("/article", handlers.ArticleHandler)
 	app.Get("/main", handlers.MainHandler)
 
-	// ========== 7. Start Server ==========
+	// ========== 8. Start Server ==========
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

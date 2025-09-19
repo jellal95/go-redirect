@@ -1,22 +1,17 @@
 package handlers
 
 import (
-	"encoding/json"
-	"fmt"
-	"go-redirect/utils"
-	"math/rand/v2"
-	"net/url"
-	"time"
-
 	"go-redirect/geo"
 	"go-redirect/models"
+	"go-redirect/utils"
+	"math/rand/v2"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mssola/user_agent"
 )
 
 var Products []models.Product
-var Logs []models.LogEntry
 
 func RedirectHandler(c *fiber.Ctx) error {
 	if productID := c.Query("product"); productID != "" {
@@ -25,7 +20,7 @@ func RedirectHandler(c *fiber.Ctx) error {
 				return doRedirect(c, p)
 			}
 		}
-		// Fallback: try to find in CSV-defined products
+		// fallback CSV
 		if csvProducts, err := utils.LoadProductsCSV("config/config.csv"); err == nil {
 			for _, p := range csvProducts {
 				if p.ID == productID {
@@ -45,6 +40,7 @@ func RedirectHandler(c *fiber.Ctx) error {
 	if total <= 0 {
 		return doRedirect(c, Products[0])
 	}
+
 	r := rand.Float64() * total
 	sum := 0.0
 	for _, p := range Products {
@@ -78,36 +74,31 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	}
 
 	// --- Headers ---
-	headers := make(map[string]string)
+	headers := map[string]string{}
 	c.Request().Header.VisitAll(func(k, v []byte) {
 		headers[string(k)] = string(v)
 	})
 
-	// --- Query Params (all) ---
-	queryParams := make(map[string]string)
-	var filteredParams []string
+	// --- Query Params ---
+	queryParams := map[string]string{}
 	var subIDOut string
-
 	c.Request().URI().QueryArgs().VisitAll(func(k, v []byte) {
 		key := string(k)
 		val := string(v)
 		queryParams[key] = val
 
-		if key != "product" {
-			filteredParams = append(filteredParams, fmt.Sprintf("%s=%s", url.QueryEscape(key), url.QueryEscape(val)))
-		}
-
+		// sub_id logic
 		if key == "type_ads" {
 			switch val {
-			case models.AdTypePropeller: // PropellerAds
+			case models.AdTypePropeller:
 				if sid, ok := queryParams["subid"]; ok && subIDOut == "" {
 					subIDOut = sid
 				}
-			case models.AdTypeGalaksion: // Galaksion
+			case models.AdTypeGalaksion:
 				if cid, ok := queryParams["clickid"]; ok && subIDOut == "" {
 					subIDOut = cid
 				}
-			case models.AdTypePopcash: // Popcash
+			case models.AdTypePopcash:
 				if cid, ok := queryParams["clickid"]; ok && subIDOut == "" {
 					subIDOut = cid
 				}
@@ -116,45 +107,34 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	})
 
 	if subIDOut != "" {
-		// Inject the derived sub_id into queryParams so helpers can fill placeholders
 		queryParams["sub_id"] = subIDOut
 	}
 
 	finalURL := utils.BuildAffiliateURL(product.URL, queryParams)
 
 	// --- Logging ---
-	displayURL, err := url.QueryUnescape(finalURL)
-	if err != nil || displayURL == "" {
-		displayURL = finalURL
+	extra := map[string]interface{}{
+		"geo":      geoInfo,
+		"sub_id":   subIDOut,
+		"type_ads": queryParams["type_ads"],
 	}
-	qp, _ := json.Marshal(queryParams)
-	hd, _ := json.Marshal(headers)
-	geoJson, _ := json.Marshal(geoInfo)
 
-	entry := utils.LogEntry{
+	utils.LogInfo(utils.LogEntry{
 		Type:        models.TypeRouteRedirect,
 		Timestamp:   time.Now(),
 		ProductName: product.Name,
-		URL:         displayURL,
+		URL:         finalURL,
 		IP:          ip,
 		UserAgent:   c.Get("User-Agent"),
 		Browser:     browser,
 		OS:          osName,
 		Device:      device,
 		Referer:     c.Get("Referer"),
-		QueryRaw:    string(c.Request().URI().QueryString()),
-		QueryParams: qp,
-		Headers:     hd,
-		Extra: map[string]interface{}{
-			"geo":      geoInfo,
-			"sub_id":   subIDOut,
-			"type_ads": queryParams["type_ads"],
-			"geo_json": string(geoJson),
-		},
-	}
+		QueryParams: queryParams,
+		Headers:     headers,
+		Extra:       extra,
+	})
 
-	utils.LogInfo(entry)
-
-	// --- Redirect ke affiliate ---
+	// --- Redirect ---
 	return c.Redirect(finalURL, 302)
 }

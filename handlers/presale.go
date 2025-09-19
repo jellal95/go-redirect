@@ -1,12 +1,10 @@
 package handlers
 
 import (
-	"encoding/json"
-	"math/rand/v2"
-	"time"
-
 	"go-redirect/models"
 	"go-redirect/utils"
+	"math/rand/v2"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mssola/user_agent"
@@ -58,7 +56,7 @@ func PreSaleHandler(c *fiber.Ctx) error {
 		}
 	}
 
-	// --- Logging Impression ---
+	// --- Get IP & User Agent ---
 	ip := c.Get("X-Forwarded-For")
 	if ip == "" {
 		ip = c.Get("X-Real-Ip")
@@ -75,13 +73,23 @@ func PreSaleHandler(c *fiber.Ctx) error {
 		device = "Mobile"
 	}
 
-	qp, _ := json.Marshal(c.Queries())
-	hd := make(map[string]string)
-	c.Request().Header.VisitAll(func(k, v []byte) {
-		hd[string(k)] = string(v)
+	// --- Build QueryParams & Headers ---
+	queryParams := make(map[string]string)
+	c.Request().URI().QueryArgs().VisitAll(func(k, v []byte) {
+		queryParams[string(k)] = string(v)
 	})
-	hdJson, _ := json.Marshal(hd)
 
+	headers := make(map[string]string)
+	c.Request().Header.VisitAll(func(k, v []byte) {
+		headers[string(k)] = string(v)
+	})
+
+	// --- Build Extra ---
+	extra := map[string]interface{}{
+		"query_raw": string(c.Request().URI().QueryString()),
+	}
+
+	// --- Log Impression ---
 	utils.LogInfo(utils.LogEntry{
 		Type:        models.TypeRoutePreSale,
 		Timestamp:   time.Now(),
@@ -93,9 +101,9 @@ func PreSaleHandler(c *fiber.Ctx) error {
 		OS:          osName,
 		Device:      device,
 		Referer:     c.Get("Referer"),
-		QueryRaw:    string(c.Request().URI().QueryString()),
-		QueryParams: qp,
-		Headers:     hdJson,
+		QueryParams: queryParams,
+		Headers:     headers,
+		Extra:       extra,
 	})
 
 	// --- Render Page ---

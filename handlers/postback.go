@@ -5,7 +5,6 @@ import (
 	"go-redirect/utils"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,6 +16,7 @@ var GalaksionConfig models.Galaksion
 var PopcashConfig models.Popcash
 var ClickAdillaConfig models.ClickAdilla
 
+// --- Public Endpoints ---
 func GetPostbacks(c *fiber.Ctx) error {
 	return c.JSON(PostbackLogs)
 }
@@ -29,9 +29,10 @@ func PostbackHandler(c *fiber.Ctx) error {
 
 	data["timestamp"] = time.Now().Format(time.RFC3339)
 	PostbackLogs = append(PostbackLogs, data)
+
 	utils.LogInfo(utils.LogEntry{
 		Type:  "postback_received",
-		Extra: data,
+		Extra: stringMapToInterfaceMap(data),
 	})
 
 	subID := data["sub_id"]
@@ -40,19 +41,37 @@ func PostbackHandler(c *fiber.Ctx) error {
 
 	switch typeAds {
 	case models.AdTypePropeller:
-		go ForwardPostbackToPropeller(subID, payout)
+		go forwardPostback("PropellerAds", subID, payout, PropellerConfig.PostbackURL, map[string]string{
+			"aid":        PropellerConfig.Aid,
+			"tid":        PropellerConfig.Tid,
+			"visitor_id": subID,
+			"payout":     payout,
+		})
 	case models.AdTypeGalaksion:
-		go ForwardPostbackToGalaksion(subID)
+		go forwardPostback("Galaksion", subID, "", GalaksionConfig.PostbackURL, map[string]string{
+			"cid":      GalaksionConfig.Cid,
+			"click_id": subID,
+		})
 	case models.AdTypePopcash:
-		go ForwardPostbackToPopcash(subID, payout)
+		go forwardPostback("Popcash", subID, payout, PopcashConfig.PostbackURL, map[string]string{
+			"aid":     PopcashConfig.Aid,
+			"type":    PopcashConfig.Type,
+			"clickid": subID,
+			"payout":  payout,
+		})
 	case models.AdTypeClickAdilla:
-		go ForwardPostbackToClickAdilla(subID, payout, data)
+		go forwardPostback("ClickAdilla", subID, payout, ClickAdillaConfig.PostbackURL, map[string]string{
+			"token":       ClickAdillaConfig.Token,
+			"campaign_id": data["campaign_id"],
+			"click_id":    subID,
+			"payout":      payout,
+		})
 	default:
 		utils.LogInfo(utils.LogEntry{
 			Type: "postback_unknown_type",
 			Extra: map[string]interface{}{
 				"type_ads": typeAds,
-				"data":     data,
+				"data":     stringMapToInterfaceMap(data),
 			},
 		})
 	}
@@ -63,12 +82,13 @@ func PostbackHandler(c *fiber.Ctx) error {
 	})
 }
 
-func ForwardPostbackToPropeller(subID, payout string) {
+// --- Forward Helper ---
+func forwardPostback(product, subID, payout, baseURL string, params map[string]string) {
 	if subID == "" {
 		utils.LogInfo(utils.LogEntry{
 			Type: "postback_error",
 			Extra: map[string]interface{}{
-				"product": "PropellerAds",
+				"product": product,
 				"reason":  "missing_subID",
 				"payout":  payout,
 			},
@@ -76,267 +96,72 @@ func ForwardPostbackToPropeller(subID, payout string) {
 		return
 	}
 
-	q := url.Values{}
-	q.Set("aid", PropellerConfig.Aid)
-	q.Set("tid", PropellerConfig.Tid)
-	q.Set("visitor_id", subID)
-	if payout != "" {
-		q.Set("payout", payout)
-	}
-	fullURL := PropellerConfig.PostbackURL
-	if strings.Contains(fullURL, "?") {
-		fullURL += "&" + q.Encode()
-	} else {
-		fullURL += "?" + q.Encode()
-	}
-
-	// === Insert Log ===
-	//params := map[string]string{"sub_id": subID, "payout": payout}
-	//qp, _ := json.Marshal(params)
-
-	//entry := models.LogEntry{
-	//	Type:        models.TypePostback,
-	//	Timestamp:   time.Now(),
-	//	ProductName: "PropellerAds",
-	//	URL:         fullURL,
-	//	QueryParams: qp,
-	//}
-	//if err := utils.DB.Create(&entry).Error; err != nil {
-	//	log.Println("Failed insert Propeller postback log:", err)
-	//}
-
-	// === Forward ===
-	_, err := http.Get(fullURL)
-	if err != nil {
-		utils.LogInfo(utils.LogEntry{
-			Type: "postback_forward_error",
-			Extra: map[string]interface{}{
-				"product": "PropellerAds",
-				"sub_id":  subID,
-				"error":   err.Error(),
-			},
-		})
-	} else {
-		utils.LogInfo(utils.LogEntry{
-			Type: "postback_forwarded",
-			Extra: map[string]interface{}{
-				"product": "PropellerAds",
-				"sub_id":  subID,
-				"fullURL": fullURL,
-			},
-		})
-	}
-}
-
-func ForwardPostbackToGalaksion(subID string) {
-	if subID == "" {
-		utils.LogInfo(utils.LogEntry{
-			Type: "postback_error",
-			Extra: map[string]interface{}{
-				"product": "Galaksion",
-				"reason":  "missing_subID",
-			},
-		})
-		return
-	}
-
-	q := url.Values{}
-	q.Set("cid", GalaksionConfig.Cid)
-	q.Set("click_id", subID)
-	fullURL := GalaksionConfig.PostbackURL
-	if strings.Contains(fullURL, "?") {
-		fullURL += "&" + q.Encode()
-	} else {
-		fullURL += "?" + q.Encode()
-	}
-
-	// === Insert Log ===
-	//params := map[string]string{"click_id": subID}
-	//qp, _ := json.Marshal(params)
-
-	//entry := models.LogEntry{
-	//	Type:        models.TypePostback,
-	//	Timestamp:   time.Now(),
-	//	ProductName: "Galaksion",
-	//	URL:         fullURL,
-	//	QueryParams: qp,
-	//}
-	//if err := utils.DB.Create(&entry).Error; err != nil {
-	//	log.Println("Failed insert Galaksion postback log:", err)
-	//}
-
-	// === Forward ===
-	_, err := http.Get(fullURL)
-	if err != nil {
-		utils.LogInfo(utils.LogEntry{
-			Type: "postback_forward_error",
-			Extra: map[string]interface{}{
-				"product": "Galaksion",
-				"sub_id":  subID,
-				"error":   err.Error(),
-			},
-		})
-	} else {
-		utils.LogInfo(utils.LogEntry{
-			Type: "postback_forwarded",
-			Extra: map[string]interface{}{
-				"product": "Galaksion",
-				"sub_id":  subID,
-				"fullURL": fullURL,
-			},
-		})
-	}
-}
-
-func ForwardPostbackToPopcash(subID, payout string) {
-	if subID == "" {
-		utils.LogInfo(utils.LogEntry{
-			Type: "postback_error",
-			Extra: map[string]interface{}{
-				"product": "Popcash",
-				"reason":  "missing_subID",
-			},
-		})
-		return
-	}
-
-	baseURL := PopcashConfig.PostbackURL
 	if baseURL == "" {
-		baseURL = "https://ct.popcash.net/click"
-	}
-	aid := PopcashConfig.Aid
-	if aid == "" {
-		aid = "494669"
-	}
-	typeVal := PopcashConfig.Type
-	if typeVal == "" {
-		typeVal = "1"
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_error",
+			Extra: map[string]interface{}{
+				"product": product,
+				"reason":  "missing_postback_url",
+			},
+		})
+		return
 	}
 
 	q := url.Values{}
-	q.Set("aid", aid)
-	q.Set("type", typeVal)
-	q.Set("clickid", subID)
-	if payout != "" {
-		q.Set("payout", payout)
+	for k, v := range params {
+		if v != "" {
+			q.Set(k, v)
+		}
 	}
 
 	fullURL := baseURL
-	if strings.Contains(fullURL, "?") {
-		fullURL += "&" + q.Encode()
-	} else {
-		fullURL += "?" + q.Encode()
+	if len(q) > 0 {
+		if containsQuery(baseURL) {
+			fullURL += "&" + q.Encode()
+		} else {
+			fullURL += "?" + q.Encode()
+		}
 	}
 
-	// === Insert Log ===
-	//params := map[string]string{"clickid": subID, "payout": payout}
-	//qp, _ := json.Marshal(params)
-
-	//entry := models.LogEntry{
-	//	Type:        models.TypePostback,
-	//	Timestamp:   time.Now(),
-	//	ProductName: "Popcash",
-	//	URL:         fullURL,
-	//	QueryParams: qp,
-	//}
-	//if err := utils.DB.Create(&entry).Error; err != nil {
-	//	log.Println("Failed insert Popcash postback log:", err)
-	//}
-
-	// === Forward ===
-	_, err := http.Get(fullURL)
+	resp, err := http.Get(fullURL)
 	if err != nil {
 		utils.LogInfo(utils.LogEntry{
 			Type: "postback_forward_error",
 			Extra: map[string]interface{}{
-				"product": "Popcash",
-				"clickid": subID,
-				"error":   err.Error(),
-			},
-		})
-	} else {
-		utils.LogInfo(utils.LogEntry{
-			Type: "postback_forwarded",
-			Extra: map[string]interface{}{
-				"product": "Popcash",
-				"clickid": subID,
+				"product": product,
+				"sub_id":  subID,
 				"fullURL": fullURL,
-			},
-		})
-	}
-}
-
-func ForwardPostbackToClickAdilla(subID, payout string, data map[string]string) {
-	if subID == "" {
-		utils.LogInfo(utils.LogEntry{
-			Type: "postback_error",
-			Extra: map[string]interface{}{
-				"product": "ClickAdilla",
-				"reason":  "missing_click_id",
+				"error":   err.Error(),
 			},
 		})
 		return
 	}
+	defer resp.Body.Close()
 
-	baseURL := ClickAdillaConfig.PostbackURL
-	if baseURL == "" {
-		baseURL = "https://tracking.clickadilla.com/in/postbacks/"
+	utils.LogInfo(utils.LogEntry{
+		Type: "postback_forwarded",
+		Extra: map[string]interface{}{
+			"product": product,
+			"sub_id":  subID,
+			"fullURL": fullURL,
+			"params":  stringMapToInterfaceMap(params),
+		},
+	})
+}
+
+// --- Helper Functions ---
+func stringMapToInterfaceMap(m map[string]string) map[string]interface{} {
+	res := make(map[string]interface{}, len(m))
+	for k, v := range m {
+		res[k] = v
 	}
+	return res
+}
 
-	q := url.Values{}
-	q.Set("token", ClickAdillaConfig.Token)
+func containsQuery(u string) bool {
+	return len(u) > 0 && (u[len(u)-1] == '?' || u[len(u)-1] == '&' || contains(u, "?"))
+}
 
-	if val, ok := data["campaign_id"]; ok {
-		q.Set("campaign_id", val)
-	}
-	q.Set("click_id", subID)
-
-	if payout != "" {
-		q.Set("payout", payout)
-	}
-
-	fullURL := baseURL
-	if strings.Contains(fullURL, "?") {
-		fullURL += "&" + q.Encode()
-	} else {
-		fullURL += "?" + q.Encode()
-	}
-
-	// === Simpan log ke DB ===
-	//qp, _ := json.Marshal(data)
-
-	//entry := models.LogEntry{
-	//	Type:        models.TypePostback,
-	//	Timestamp:   time.Now(),
-	//	ProductName: "ClickAdilla",
-	//	URL:         fullURL,
-	//	QueryParams: qp,
-	//}
-
-	//if err := utils.DB.Create(&entry).Error; err != nil {
-	//	log.Println("Failed insert ClickAdilla postback log:", err)
-	//}
-
-	// === Forward ke ClickAdilla ===
-	_, err := http.Get(fullURL)
-	if err != nil {
-		utils.LogInfo(utils.LogEntry{
-			Type: "postback_forward_error",
-			Extra: map[string]interface{}{
-				"product":  "ClickAdilla",
-				"click_id": subID,
-				"fullURL":  fullURL,
-				"error":    err.Error(),
-			},
-		})
-	} else {
-		utils.LogInfo(utils.LogEntry{
-			Type: "postback_forwarded",
-			Extra: map[string]interface{}{
-				"product":  "ClickAdilla",
-				"click_id": subID,
-				"fullURL":  fullURL,
-			},
-		})
-	}
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (substr != "" && s != "")
 }

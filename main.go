@@ -4,7 +4,6 @@ import (
 	"go-redirect/middleware"
 	"os"
 
-	"go-redirect/geo"
 	"go-redirect/handlers"
 	"go-redirect/utils"
 
@@ -26,8 +25,6 @@ func main() {
 	//if err := utils.Migrate(); err != nil {
 	//	panic(err)
 	//}
-
-	utils.InitLogger()
 
 	// ========== 1. Load Campaign Config ==========
 	appCfg, err := utils.LoadConfig("config/config.yaml")
@@ -79,22 +76,15 @@ func main() {
 	engine := html.New("./views", ".html")
 	app := fiber.New(fiber.Config{Views: engine})
 
-	// Pasang middleware global
+	app.Get("/logs", handlers.LogsHandler)
+	app.Get("/postbacks", handlers.GetPostbacks)
+
+	// Pasang middleware global bot filter
 	app.Use(bf.Handler())
 
-	// ========== 4. Init Geo DB (optional) ==========
-	if err := geo.InitGeoDB("GeoLite2-City.mmdb"); err != nil {
-		utils.LogInfo(utils.LogEntry{
-			Type:  "geoip_warning",
-			Extra: map[string]interface{}{"message": "GeoIP DB not found, skipping geo info"},
-		})
-	}
-
-	// ========== 5. Routes ==========
+	// ========== 5. Routes lainnya ==========
 	app.Get("/", handlers.RedirectHandler)
-	app.Get("/logs", handlers.LogsHandler)
 	app.Get("/postback", handlers.PostbackHandler)
-	app.Get("/postbacks", handlers.GetPostbacks)
 	app.Get("/pre-sale", handlers.PreSaleHandler)
 	app.Get("/article", handlers.ArticleHandler)
 	app.Get("/main", handlers.MainHandler)
@@ -104,11 +94,6 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-
-	utils.LogInfo(utils.LogEntry{
-		Type:  "server_startup",
-		Extra: map[string]interface{}{"port": port, "message": "Server running 🚀"},
-	})
 
 	if err := app.Listen(":" + port); err != nil {
 		utils.LogFatal(utils.LogEntry{

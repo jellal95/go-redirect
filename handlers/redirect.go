@@ -1,11 +1,9 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"go-redirect/utils"
-	"log"
 	"math/rand/v2"
 	"net/url"
 	"time"
@@ -133,7 +131,7 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	hd, _ := json.Marshal(headers)
 	geoJson, _ := json.Marshal(geoInfo)
 
-	entry := models.LogEntry{
+	entry := utils.LogEntry{
 		Type:        models.TypeRouteRedirect,
 		Timestamp:   time.Now(),
 		ProductName: product.Name,
@@ -147,24 +145,16 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		QueryRaw:    string(c.Request().URI().QueryString()),
 		QueryParams: qp,
 		Headers:     hd,
-		Geo:         geoJson,
-	}
-	//
-	//if err := utils.DB.Create(&entry).Error; err != nil {
-	//	log.Println("Failed insert redirect log:", err)
-	//}
-
-	Logs = append(Logs, entry)
-	buf := &bytes.Buffer{}
-	enc := json.NewEncoder(buf)
-	enc.SetEscapeHTML(false)
-	if err := enc.Encode(entry); err == nil {
-		log.Println("Redirect Log:", buf.String())
+		Extra: map[string]interface{}{
+			"geo":      geoInfo,
+			"sub_id":   subIDOut,
+			"type_ads": queryParams["type_ads"],
+			"geo_json": string(geoJson),
+		},
 	}
 
-	if subIDOut != "" {
-		log.Println("subid yang dilempar ke web affiliate:", subIDOut)
-	}
+	utils.LogInfo(entry)
 
+	// --- Redirect ke affiliate ---
 	return c.Redirect(finalURL, 302)
 }

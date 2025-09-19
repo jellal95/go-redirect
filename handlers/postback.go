@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"go-redirect/models"
 	"go-redirect/utils"
 	"net/http"
@@ -41,26 +42,26 @@ func PostbackHandler(c *fiber.Ctx) error {
 
 	switch typeAds {
 	case models.AdTypePropeller:
-		go forwardPostback("PropellerAds", subID, payout, PropellerConfig.PostbackURL, map[string]string{
+		go forwardPostbackWithBreaker("propeller", "PropellerAds", subID, payout, PropellerConfig.PostbackURL, map[string]string{
 			"aid":        PropellerConfig.Aid,
 			"tid":        PropellerConfig.Tid,
 			"visitor_id": subID,
 			"payout":     payout,
 		})
 	case models.AdTypeGalaksion:
-		go forwardPostback("Galaksion", subID, "", GalaksionConfig.PostbackURL, map[string]string{
+		go forwardPostbackWithBreaker("galaksion", "Galaksion", subID, "", GalaksionConfig.PostbackURL, map[string]string{
 			"cid":      GalaksionConfig.Cid,
 			"click_id": subID,
 		})
 	case models.AdTypePopcash:
-		go forwardPostback("Popcash", subID, payout, PopcashConfig.PostbackURL, map[string]string{
+		go forwardPostbackWithBreaker("popcash", "Popcash", subID, payout, PopcashConfig.PostbackURL, map[string]string{
 			"aid":     PopcashConfig.Aid,
 			"type":    PopcashConfig.Type,
 			"clickid": subID,
 			"payout":  payout,
 		})
 	case models.AdTypeClickAdilla:
-		go forwardPostback("ClickAdilla", subID, payout, ClickAdillaConfig.PostbackURL, map[string]string{
+		go forwardPostbackWithBreaker("clickadilla", "ClickAdilla", subID, payout, ClickAdillaConfig.PostbackURL, map[string]string{
 			"token":       ClickAdillaConfig.Token,
 			"campaign_id": data["campaign_id"],
 			"click_id":    subID,
@@ -82,8 +83,8 @@ func PostbackHandler(c *fiber.Ctx) error {
 	})
 }
 
-// --- Forward Helper ---
-func forwardPostback(product, subID, payout, baseURL string, params map[string]string) {
+// --- Forward Helper with Circuit Breaker ---
+func forwardPostbackWithBreaker(networkKey, product, subID, payout, baseURL string, params map[string]string) {
 	if subID == "" {
 		utils.LogInfo(utils.LogEntry{
 			Type: "postback_error",
@@ -123,7 +124,34 @@ func forwardPostback(product, subID, payout, baseURL string, params map[string]s
 		}
 	}
 
-	resp, err := http.Get(fullURL)
+	// Use circuit breaker for the HTTP request
+	breakers := utils.GetPostbackBreakers()
+	err := breakers.Execute(networkKey, func() error {
+		resp, err := http.Get(fullURL)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		// Check for HTTP error status codes
+		if resp.StatusCode >= 400 {
+			return fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status)
+		}
+
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_forwarded",
+			Extra: map[string]interface{}{
+				"product":     product,
+				"sub_id":      subID,
+				"fullURL":     fullURL,
+				"params":      stringMapToInterfaceMap(params),
+				"status_code": resp.StatusCode,
+			},
+		})
+		utils.IncrementPostback()
+		return nil
+	})
+
 	if err != nil {
 		utils.LogInfo(utils.LogEntry{
 			Type: "postback_forward_error",
@@ -132,21 +160,11 @@ func forwardPostback(product, subID, payout, baseURL string, params map[string]s
 				"sub_id":  subID,
 				"fullURL": fullURL,
 				"error":   err.Error(),
+				"network": networkKey,
 			},
 		})
-		return
+		utils.IncrementError()
 	}
-	defer resp.Body.Close()
-
-	utils.LogInfo(utils.LogEntry{
-		Type: "postback_forwarded",
-		Extra: map[string]interface{}{
-			"product": product,
-			"sub_id":  subID,
-			"fullURL": fullURL,
-			"params":  stringMapToInterfaceMap(params),
-		},
-	})
 }
 
 // --- Helper Functions ---

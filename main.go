@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"go-redirect/geo"
 	"go-redirect/middleware"
 	"os"
+	"time"
 
 	"go-redirect/handlers"
 	"go-redirect/utils"
@@ -51,27 +53,16 @@ func main() {
 
 	// ========== 3. Setup Bot Filter Middleware ==========
 	botCfg := middleware.BotFilterConfig{
-		AllowCountries: []string{"ID"},
-		BlacklistUA:    []string{"curl", "bot", "spider", "crawler", "python", "scrapy", "headless"},
-		BlacklistIPPrefix: []string{
-			"34.",      // Google Cloud
-			"35.",      // Google Cloud
-			"66.249.",  // Googlebot
-			"212.93.",  // IPXO / EU-RU datacenter
-			"104.28.",  // Cloudflare proxy/bot
-			"13.217.",  // AWS Singapore
-			"103.111.", // Local DC Jakarta
-		},
-		BlacklistReferrer: []string{
-			"deliv12.com", "torzor.com", "miluwo.com", "asdfix.com", "explorads.com", "pcdelv.com", "popcash.net",
-			"sahorjj.com", "viowrel.com",
-		},
-		BlacklistRefRegex:  []string{`^p\.[a-z0-9\-]+\.com$`},
-		RateLimitMax:       10,
-		RateLimitWindowSec: 10,
-		LogAllowed:         false,
-		LogBlocked:         true,
-		AllowMobileOnly:    true,
+		AllowCountries:     appCfg.BotFilter.AllowCountries,
+		BlacklistUA:        appCfg.BotFilter.BlacklistUA,
+		BlacklistIPPrefix:  appCfg.BotFilter.BlacklistIPPrefix,
+		BlacklistReferrer:  appCfg.BotFilter.BlacklistReferrer,
+		BlacklistRefRegex:  appCfg.BotFilter.BlacklistRefRegex,
+		RateLimitMax:       appCfg.BotFilter.RateLimitMax,
+		RateLimitWindowSec: appCfg.BotFilter.RateLimitWindowSec,
+		LogAllowed:         appCfg.BotFilter.LogAllowed,
+		LogBlocked:         appCfg.BotFilter.LogBlocked,
+		AllowMobileOnly:    appCfg.BotFilter.AllowMobileOnly,
 	}
 	bf, err := middleware.NewBotFilter(botCfg, "GeoLite2-Country.mmdb")
 	if err != nil {
@@ -85,25 +76,49 @@ func main() {
 	engine := html.New("./views", ".html")
 	app := fiber.New(fiber.Config{Views: engine})
 
-	// ========== 5. Admin endpoints (tanpa middleware) ==========
+	// ========== 5. Request ID middleware ==========
+	app.Use(middleware.RequestID())
+
+	// ========== 6. Console logging dengan metrics ==========
+	app.Use(middleware.RequestLogger())
+
+	// ========== 7. Health & Admin endpoints (tanpa bot filter) ==========
+	app.Get("/health", handlers.HealthHandler)
+	app.Get("/ready", handlers.ReadinessHandler)
 	app.Get("/logs", handlers.LogsHandler)
 	app.Get("/postbacks", handlers.GetPostbacks)
+	app.Get("/metrics", handlers.MetricsHandler)
+	app.Post("/metrics/reset", handlers.MetricsResetHandler)
+	app.Get("/analytics/params", handlers.AnalyticsParamsHandler)
+	app.Get("/analytics/referers", handlers.AnalyticsRefererHandler)
+	app.Get("/circuit-breakers", handlers.CircuitBreakersHandler)
+	app.Post("/circuit-breakers/reset/:network", handlers.CircuitBreakerResetHandler)
+	app.Post("/circuit-breakers/reset-all", handlers.CircuitBreakersResetAllHandler)
 
-	// ========== 6. Pasang middleware global bot filter ==========
+	// ========== 8. Pasang middleware global bot filter ==========
 	app.Use(bf.Handler())
 
-	// ========== 7. Routes lainnya ==========
+	// ========== 9. Routes lainnya ==========
 	app.Get("/", handlers.RedirectHandler)
 	app.Get("/postback", handlers.PostbackHandler)
 	app.Get("/pre-sale", handlers.PreSaleHandler)
 	app.Get("/article", handlers.ArticleHandler)
 	app.Get("/main", handlers.MainHandler)
 
-	// ========== 8. Start Server ==========
+	// ========== 10. Start Server dengan Graceful Shutdown ==========
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
+
+	// Start graceful shutdown handler in background
+	go utils.GracefulShutdown(app, 30*time.Second)
+
+	fmt.Printf("🚀 Server starting on port %s\n", port)
+	utils.LogInfo(utils.LogEntry{
+		Type:  "server_start",
+		Extra: map[string]interface{}{"port": port},
+	})
 
 	if err := app.Listen(":" + port); err != nil {
 		utils.LogFatal(utils.LogEntry{

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,8 +22,8 @@ type LogsResponse struct {
 	TypeAdsSummary map[string]int `json:"type_ads_summary"` // Essential: traffic sources
 	DeviceSummary  map[string]int `json:"device_summary"`   // Device source tracking
 	BrowserSummary map[string]int `json:"browser_summary"`  // Browser analytics
-	SubIDSummary   map[string]int `json:"sub_id_summary"`   // Sub ID / Click ID tracking
 	SpotIDSummary  map[string]int `json:"spot_id_summary"`  // Track spot performance
+	RefererDomains map[string]int `json:"referer_domains"`  // Referer domain tracking
 	// === GEO ANALYTICS ===
 	GeoSummary     map[string]int `json:"geo_summary"`     // Country targeting
 	CitySummary    map[string]int `json:"city_summary"`    // City analytics
@@ -48,8 +49,8 @@ func LogsHandler(c *fiber.Ctx) error {
 		TypeAdsSummary: make(map[string]int),
 		DeviceSummary:  make(map[string]int),
 		BrowserSummary: make(map[string]int),
-		SubIDSummary:   make(map[string]int),
 		SpotIDSummary:  make(map[string]int),
+		RefererDomains: make(map[string]int),
 		GeoSummary:     make(map[string]int),
 		CitySummary:    make(map[string]int),
 		RegionSummary:  make(map[string]int),
@@ -86,14 +87,17 @@ func LogsHandler(c *fiber.Ctx) error {
 				resp.BrowserSummary[entry.Browser]++
 			}
 
+			// Process referer domain
+			if entry.Referer != "" {
+				domain := extractDomainFromReferer(entry.Referer)
+				if domain != "" {
+					resp.RefererDomains[domain]++
+				}
+			}
+
 			if entry.Extra != nil {
 				if typeAds, ok := entry.Extra["type_ads"].(string); ok && typeAds != "" {
 					resp.TypeAdsSummary[typeAds]++
-				}
-
-				// Extract sub_id from extra data
-				if subID, ok := entry.Extra["sub_id"].(string); ok && subID != "" {
-					resp.SubIDSummary[subID]++
 				}
 
 				// Enhanced geo data processing
@@ -110,36 +114,10 @@ func LogsHandler(c *fiber.Ctx) error {
 				}
 			}
 
-			// Check spot_id and sub_id from query params
+			// Check spot_id from query params
 			if entry.QueryParams != nil {
 				if spotID, ok := entry.QueryParams["spot_id"]; ok && spotID != "" {
 					resp.SpotIDSummary[spotID]++
-				}
-
-				// Extract sub_id based on type_ads from query params
-				if typeAds, ok := entry.QueryParams["type_ads"]; ok {
-					var subID string
-					switch typeAds {
-					case "1": // PropellerAds
-						if sid, ok := entry.QueryParams["subid"]; ok && sid != "" {
-							subID = sid
-						}
-					case "2": // Galaksion
-						if cid, ok := entry.QueryParams["clickid"]; ok && cid != "" {
-							subID = cid
-						}
-					case "3": // Popcash
-						if cid, ok := entry.QueryParams["clickid"]; ok && cid != "" {
-							subID = cid
-						}
-					case "4": // ClickAdilla
-						if cid, ok := entry.QueryParams["click_id"]; ok && cid != "" {
-							subID = cid
-						}
-					}
-					if subID != "" {
-						resp.SubIDSummary[subID]++
-					}
 				}
 			}
 		}
@@ -154,13 +132,35 @@ func LogsHandler(c *fiber.Ctx) error {
 	sortMapKeys(resp.TypeAdsSummary)
 	sortMapKeys(resp.DeviceSummary)
 	sortMapKeys(resp.BrowserSummary)
-	sortMapKeys(resp.SubIDSummary)
 	sortMapKeys(resp.SpotIDSummary)
+	sortMapKeys(resp.RefererDomains)
 	sortMapKeys(resp.GeoSummary)
 	sortMapKeys(resp.CitySummary)
 	sortMapKeys(resp.RegionSummary)
 
 	return c.JSON(resp)
+}
+
+// extractDomainFromReferer extracts domain from referer URL
+func extractDomainFromReferer(referer string) string {
+	if referer == "" {
+		return ""
+	}
+
+	// Remove protocol
+	if strings.HasPrefix(referer, "http://") {
+		referer = strings.TrimPrefix(referer, "http://")
+	} else if strings.HasPrefix(referer, "https://") {
+		referer = strings.TrimPrefix(referer, "https://")
+	}
+
+	// Extract domain (before first slash)
+	parts := strings.Split(referer, "/")
+	if len(parts) > 0 && parts[0] != "" {
+		return parts[0]
+	}
+
+	return ""
 }
 
 func sortMapKeys(m map[string]int) {

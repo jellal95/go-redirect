@@ -16,6 +16,42 @@ clickadilla:
   postback_url: "https://tracking.clickadilla.com/in/postbacks/"
   token: "m96gRV"
 
+bot_filter:
+  allow_countries: ["ID"]
+  allow_mobile_only: true
+  rate_limit_max: 10
+  rate_limit_window_sec: 10
+  log_allowed: false
+  log_blocked: true
+  blacklist_ua:
+    - "curl"
+    - "bot"
+    - "spider"
+    - "crawler"
+    - "python"
+    - "scrapy"
+    - "headless"
+  blacklist_ip_prefix:
+    - "34."      # Google Cloud
+    - "35."      # Google Cloud
+    - "66.249."  # Googlebot
+    - "212.93."  # IPXO / EU-RU datacenter
+    - "104.28."  # Cloudflare proxy/bot
+    - "13.217."  # AWS Singapore
+    - "103.111." # Local DC Jakarta
+  blacklist_referrer:
+    - "deliv12.com"
+    - "torzor.com"
+    - "miluwo.com"
+    - "asdfix.com"
+    - "explorads.com"
+    - "pcdelv.com"
+    - "popcash.net"
+    - "sahorjj.com"
+    - "viowrel.com"
+  blacklist_ref_regex:
+    - "^p\\.[a-z0-9\\-]+\\.com$"
+
 products:
   - name: "Shopee Direct - Anwar"
     url: "https://s.shopee.co.id/5VLlFD7dZe?sub_id={click_id}--{campaign_id}--{spot_id}--{type_ads}--{domain}"

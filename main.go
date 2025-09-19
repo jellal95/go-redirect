@@ -76,20 +76,21 @@ func main() {
 	engine := html.New("./views", ".html")
 	app := fiber.New(fiber.Config{Views: engine})
 
+	// ========== 4. Admin endpoints (tanpa middleware) ==========
 	app.Get("/logs", handlers.LogsHandler)
 	app.Get("/postbacks", handlers.GetPostbacks)
 
-	// Pasang middleware global bot filter
+	// ========== 5. Pasang middleware global bot filter ==========
 	app.Use(bf.Handler())
 
-	// ========== 5. Routes lainnya ==========
+	// ========== 6. Routes lainnya ==========
 	app.Get("/", handlers.RedirectHandler)
 	app.Get("/postback", handlers.PostbackHandler)
 	app.Get("/pre-sale", handlers.PreSaleHandler)
 	app.Get("/article", handlers.ArticleHandler)
 	app.Get("/main", handlers.MainHandler)
 
-	// ========== 6. Start Server ==========
+	// ========== 7. Start Server ==========
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

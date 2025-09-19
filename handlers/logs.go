@@ -20,6 +20,8 @@ type LogsResponse struct {
 	TypeSummary    map[string]int `json:"type_summary"`     // Essential: log types
 	ProductSummary map[string]int `json:"product_summary"`  // Essential: business metrics
 	TypeAdsSummary map[string]int `json:"type_ads_summary"` // Essential: traffic sources
+	DeviceSummary  map[string]int `json:"device_summary"`   // Device source tracking
+	BrowserSummary map[string]int `json:"browser_summary"`  // Browser analytics
 	SpotIDSummary  map[string]int `json:"spot_id_summary"`  // Track spot performance
 	TimeSummary    map[string]int `json:"time_summary"`     // Essential: hourly performance
 	GeoSummary     map[string]int `json:"geo_summary"`      // Essential: country targeting
@@ -41,6 +43,8 @@ func LogsHandler(c *fiber.Ctx) error {
 		TypeSummary:    make(map[string]int),
 		ProductSummary: make(map[string]int),
 		TypeAdsSummary: make(map[string]int),
+		DeviceSummary:  make(map[string]int),
+		BrowserSummary: make(map[string]int),
 		SpotIDSummary:  make(map[string]int),
 		TimeSummary:    make(map[string]int),
 		GeoSummary:     make(map[string]int),
@@ -67,6 +71,14 @@ func LogsHandler(c *fiber.Ctx) error {
 
 			if entry.ProductName != "" {
 				resp.ProductSummary[entry.ProductName]++
+			}
+
+			if entry.Device != "" {
+				resp.DeviceSummary[entry.Device]++
+			}
+
+			if entry.Browser != "" {
+				resp.BrowserSummary[entry.Browser]++
 			}
 
 			if entry.Extra != nil {
@@ -101,6 +113,8 @@ func LogsHandler(c *fiber.Ctx) error {
 	sortMapKeys(resp.TypeSummary)
 	sortMapKeys(resp.ProductSummary)
 	sortMapKeys(resp.TypeAdsSummary)
+	sortMapKeys(resp.DeviceSummary)
+	sortMapKeys(resp.BrowserSummary)
 	sortMapKeys(resp.SpotIDSummary)
 	sortMapKeys(resp.TimeSummary)
 	sortMapKeys(resp.GeoSummary)

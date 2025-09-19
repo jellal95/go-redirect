@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"log"
+	"go-redirect/utils"
 	"net"
 	"net/url"
 	"regexp"
@@ -52,6 +52,11 @@ func NewBotFilter(cfg BotFilterConfig, geoDBPath string) (*botFilter, error) {
 	if geoDBPath != "" {
 		db, err = geoip2.Open(geoDBPath)
 		if err != nil {
+			utils.LogFatal(utils.LogEntry{
+				Type:  "geoip_db_error",
+				Extra: map[string]interface{}{"error": err.Error(), "geoDBPath": geoDBPath},
+			}, 1)
+
 			return nil, err
 		}
 	}
@@ -77,11 +82,19 @@ func (bf *botFilter) Handler() fiber.Handler {
 		const bypassKey = "a9f7x2kq"
 
 		if c.Query("bypass") == bypassKey {
-			log.Println("[BYPASS] Request dilepas via query param")
+			utils.LogInfo(utils.LogEntry{
+				Type:  "bypass_request",
+				Extra: map[string]interface{}{"method": "query_param"},
+			})
+
 			return c.Next()
 		}
 		if c.Get("X-Bypass-Key") == bypassKey {
-			log.Println("[BYPASS] Request dilepas via header")
+			utils.LogInfo(utils.LogEntry{
+				Type:  "bypass_request",
+				Extra: map[string]interface{}{"method": "header"},
+			})
+
 			return c.Next()
 		}
 
@@ -99,7 +112,16 @@ func (bf *botFilter) Handler() fiber.Handler {
 		// 1) Referrer blacklist
 		if host := refHost(ref); host != "" {
 			if bf.isBadReferrer(host) {
-				log.Printf("[BLOCK] Bad referrer: %s", host)
+				utils.LogInfo(utils.LogEntry{
+					Type: "block_request",
+					Extra: map[string]interface{}{
+						"reason":    "bad_referrer",
+						"referrer":  host,
+						"ip":        ip,
+						"userAgent": ua,
+					},
+				})
+
 				return c.Status(fiber.StatusForbidden).Send(nil)
 			}
 		}
@@ -107,21 +129,44 @@ func (bf *botFilter) Handler() fiber.Handler {
 		// 2) User-Agent blacklist
 		for _, bad := range bf.cfg.BlacklistUA {
 			if bad != "" && strings.Contains(ua, bad) {
-				log.Printf("[BLOCK] Suspicious UA: %s", bad)
+				utils.LogInfo(utils.LogEntry{
+					Type: "block_request",
+					Extra: map[string]interface{}{
+						"reason": "suspicious_ua",
+						"ua":     bad,
+						"ip":     ip,
+					},
+				})
+
 				return c.Status(fiber.StatusForbidden).Send(nil)
 			}
 		}
 
 		// 3) Rate limiting
 		if bf.tooMany(ip) {
-			log.Printf("[BLOCK] Rate limit exceeded: %s", ip)
+			utils.LogInfo(utils.LogEntry{
+				Type: "block_request",
+				Extra: map[string]interface{}{
+					"reason": "rate_limit_exceeded",
+					"ip":     ip,
+				},
+			})
+
 			return c.Status(fiber.StatusForbidden).Send(nil)
 		}
 
 		// 4) IP prefix block
 		for _, p := range bf.cfg.BlacklistIPPrefix {
 			if strings.HasPrefix(ip, p) {
-				log.Printf("[BLOCK] Blacklisted IP prefix: %s", p)
+				utils.LogInfo(utils.LogEntry{
+					Type: "block_request",
+					Extra: map[string]interface{}{
+						"reason":    "blacklisted_ip_prefix",
+						"ip_prefix": p,
+						"ip":        ip,
+					},
+				})
+
 				return c.Status(fiber.StatusForbidden).Send(nil)
 			}
 		}
@@ -130,18 +175,41 @@ func (bf *botFilter) Handler() fiber.Handler {
 		if len(bf.cfg.AllowCountries) > 0 && bf.geoDB != nil {
 			cc := bf.countryCode(ip, &logData)
 			if cc == "" {
-				log.Printf("[BLOCK] Geo unknown: %s", ip)
+				utils.LogInfo(utils.LogEntry{
+					Type: "block_request",
+					Extra: map[string]interface{}{
+						"reason": "geo_unknown",
+						"ip":     ip,
+					},
+				})
+
 				return c.Status(fiber.StatusForbidden).Send(nil)
 			}
 			if !containsStr(bf.cfg.AllowCountries, cc) {
-				log.Printf("[BLOCK] Geo not allowed: %s", cc)
+				utils.LogInfo(utils.LogEntry{
+					Type: "block_request",
+					Extra: map[string]interface{}{
+						"reason":      "geo_not_allowed",
+						"ip":          ip,
+						"countryCode": cc,
+					},
+				})
+
 				return c.Status(fiber.StatusForbidden).Send(nil)
 			}
 		}
 
 		// 6) Mobile only
 		if bf.cfg.AllowMobileOnly && !isMobileUA(ua) {
-			log.Printf("[BLOCK] Non-mobile device: %s", ua)
+			utils.LogInfo(utils.LogEntry{
+				Type: "block_request",
+				Extra: map[string]interface{}{
+					"reason": "non_mobile_device",
+					"ua":     ua,
+					"ip":     ip,
+				},
+			})
+
 			return c.Status(fiber.StatusForbidden).Send(nil)
 		}
 
@@ -284,14 +352,6 @@ func isMobileUA(ua string) bool {
 	if strings.Contains(ua, " mobile ") {
 		return true
 	}
-	return false
-}
 
-func saveClickLog(logData ClickLog, blocked bool) {
-	status := "ALLOWED"
-	if blocked {
-		status = "BLOCKED"
-	}
-	log.Printf("[%s] ip=%s ua=%q cc=%s ref=%q\n",
-		status, logData.IP, logData.UserAgent, logData.Country, logData.Referrer)
+	return false
 }

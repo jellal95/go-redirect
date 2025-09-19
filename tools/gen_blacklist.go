@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"go-redirect/utils"
 	"net"
 	"strings"
 
@@ -12,7 +12,10 @@ import (
 func main() {
 	asnDB, err := geoip2.Open("GeoLite2-ASN.mmdb")
 	if err != nil {
-		log.Fatal(err)
+		utils.LogFatal(utils.LogEntry{
+			Type:  "geoip_asn_open_error",
+			Extra: map[string]interface{}{"error": err.Error(), "db": "GeoLite2-ASN.mmdb"},
+		}, 1)
 	}
 	defer asnDB.Close()
 
@@ -28,18 +31,34 @@ func main() {
 		if ip == nil {
 			continue
 		}
+
 		rec, err := asnDB.ASN(ip)
 		if err != nil {
 			continue
 		}
-		fmt.Printf("%s -> ASN %d (%s)\n", ipStr, rec.AutonomousSystemNumber, rec.AutonomousSystemOrganization)
 
-		// Simple rule: kalau provider mengandung AWS / Cloudflare / IPXO → block prefix
+		utils.LogInfo(utils.LogEntry{
+			Type: "asn_lookup",
+			Extra: map[string]interface{}{
+				"ip":       ipStr,
+				"asn":      rec.AutonomousSystemNumber,
+				"provider": rec.AutonomousSystemOrganization,
+			},
+		})
+
 		if containsAny(rec.AutonomousSystemOrganization, []string{"Amazon", "Cloudflare", "IPXO", "OVH"}) {
-			// ambil 2 oktet pertama → jadi prefix
 			parts := ip.To4()
 			if parts != nil {
-				fmt.Printf("Blacklist prefix: \"%d.%d.\"\n", parts[0], parts[1])
+				utils.LogInfo(utils.LogEntry{
+					Type: "asn_blacklist_prefix",
+					Extra: map[string]interface{}{
+						"ip":       ipStr,
+						"prefix":   fmt.Sprintf("%d.%d.", parts[0], parts[1]),
+						"provider": rec.AutonomousSystemOrganization,
+						"asn":      rec.AutonomousSystemNumber,
+						"reason":   "cloud_provider",
+					},
+				})
 			}
 		}
 	}

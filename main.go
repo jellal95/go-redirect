@@ -2,7 +2,6 @@ package main
 
 import (
 	"go-redirect/middleware"
-	"log"
 	"os"
 
 	"go-redirect/geo"
@@ -28,10 +27,15 @@ func main() {
 	//	panic(err)
 	//}
 
+	utils.InitLogger()
+
 	// ========== 1. Load Campaign Config ==========
 	appCfg, err := utils.LoadConfig("config/config.yaml")
 	if err != nil {
-		log.Fatal(err)
+		utils.LogFatal(utils.LogEntry{
+			Type:  "fatal_error",
+			Extra: map[string]interface{}{"error": err.Error()},
+		}, 1)
 	}
 
 	handlers.Products = appCfg.Products
@@ -65,7 +69,10 @@ func main() {
 	}
 	bf, err := middleware.NewBotFilter(botCfg, "GeoLite2-Country.mmdb")
 	if err != nil {
-		log.Fatalf("GeoIP open err: %v", err)
+		utils.LogFatal(utils.LogEntry{
+			Type:  "geoip_error",
+			Extra: map[string]interface{}{"error": err.Error()},
+		}, 1)
 	}
 
 	// ========== 3. Init Fiber Engine ==========
@@ -77,7 +84,10 @@ func main() {
 
 	// ========== 4. Init Geo DB (optional) ==========
 	if err := geo.InitGeoDB("GeoLite2-City.mmdb"); err != nil {
-		log.Println("GeoIP DB not found, skipping geo info")
+		utils.LogInfo(utils.LogEntry{
+			Type:  "geoip_warning",
+			Extra: map[string]interface{}{"message": "GeoIP DB not found, skipping geo info"},
+		})
 	}
 
 	// ========== 5. Routes ==========
@@ -94,9 +104,16 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	log.Printf("🚀 Server running on :%s", port)
+
+	utils.LogInfo(utils.LogEntry{
+		Type:  "server_startup",
+		Extra: map[string]interface{}{"port": port, "message": "Server running 🚀"},
+	})
 
 	if err := app.Listen(":" + port); err != nil {
-		log.Fatal(err)
+		utils.LogFatal(utils.LogEntry{
+			Type:  "fatal_error",
+			Extra: map[string]interface{}{"error": err.Error()},
+		}, 1)
 	}
 }

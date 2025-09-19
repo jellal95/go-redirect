@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
-	"log"
 	"math/rand/v2"
 	"time"
 
@@ -15,15 +13,28 @@ import (
 )
 
 func PreSaleHandler(c *fiber.Ctx) error {
-	// Always load from CSV as per requirement
+	// --- Load CSV Products ---
 	products, err := utils.LoadProductsCSV("config/config.csv")
 	if err != nil {
-		log.Println("failed to load CSV products:", err)
+		utils.LogInfo(utils.LogEntry{
+			Type: "load_csv_error",
+			Extra: map[string]interface{}{
+				"file":  "config/config.csv",
+				"error": err.Error(),
+			},
+		})
 	}
 	if len(products) == 0 {
+		utils.LogInfo(utils.LogEntry{
+			Type: "no_products_configured",
+			Extra: map[string]interface{}{
+				"file": "config/config.csv",
+			},
+		})
 		return c.Status(404).SendString("No products configured")
 	}
 
+	// --- Select Product by Percentage ---
 	total := 0.0
 	for _, p := range products {
 		total += p.Percentage
@@ -71,7 +82,7 @@ func PreSaleHandler(c *fiber.Ctx) error {
 	})
 	hdJson, _ := json.Marshal(hd)
 
-	entry := models.LogEntry{
+	utils.LogInfo(utils.LogEntry{
 		Type:        models.TypeRoutePreSale,
 		Timestamp:   time.Now(),
 		ProductName: selected.Name,
@@ -85,18 +96,7 @@ func PreSaleHandler(c *fiber.Ctx) error {
 		QueryRaw:    string(c.Request().URI().QueryString()),
 		QueryParams: qp,
 		Headers:     hdJson,
-	}
-	//if err := utils.DB.Create(&entry).Error; err != nil {
-	//	log.Println("Failed insert pre-sale log:", err)
-	//}
-
-	Logs = append(Logs, entry)
-	buf := &bytes.Buffer{}
-	enc := json.NewEncoder(buf)
-	enc.SetEscapeHTML(false)
-	if err := enc.Encode(entry); err == nil {
-		log.Println("PreSale Log (view):", buf.String())
-	}
+	})
 
 	// --- Render Page ---
 	return c.Render("pre-sale", fiber.Map{

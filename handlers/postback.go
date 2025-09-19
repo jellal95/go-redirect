@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"go-redirect/models"
-	"log"
+	"go-redirect/utils"
 	"net/http"
 	"net/url"
 	"strings"
@@ -29,7 +29,10 @@ func PostbackHandler(c *fiber.Ctx) error {
 
 	data["timestamp"] = time.Now().Format(time.RFC3339)
 	PostbackLogs = append(PostbackLogs, data)
-	log.Println("Postback received:", data)
+	utils.LogInfo(utils.LogEntry{
+		Type:  "postback_received",
+		Extra: data,
+	})
 
 	subID := data["sub_id"]
 	payout := data["payout"]
@@ -45,7 +48,13 @@ func PostbackHandler(c *fiber.Ctx) error {
 	case models.AdTypeClickAdilla:
 		go ForwardPostbackToClickAdilla(subID, payout, data)
 	default:
-		log.Println("Unknown type_ads, just logging:", typeAds)
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_unknown_type",
+			Extra: map[string]interface{}{
+				"type_ads": typeAds,
+				"data":     data,
+			},
+		})
 	}
 
 	return c.JSON(fiber.Map{
@@ -56,7 +65,14 @@ func PostbackHandler(c *fiber.Ctx) error {
 
 func ForwardPostbackToPropeller(subID, payout string) {
 	if subID == "" {
-		log.Println("PropellerAds postback missing subID")
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_error",
+			Extra: map[string]interface{}{
+				"product": "PropellerAds",
+				"reason":  "missing_subID",
+				"payout":  payout,
+			},
+		})
 		return
 	}
 
@@ -92,15 +108,35 @@ func ForwardPostbackToPropeller(subID, payout string) {
 	// === Forward ===
 	_, err := http.Get(fullURL)
 	if err != nil {
-		log.Println("Failed to send postback to PropellerAds:", err)
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_forward_error",
+			Extra: map[string]interface{}{
+				"product": "PropellerAds",
+				"sub_id":  subID,
+				"error":   err.Error(),
+			},
+		})
 	} else {
-		log.Println("Forwarded postback to PropellerAds for subID:", subID)
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_forwarded",
+			Extra: map[string]interface{}{
+				"product": "PropellerAds",
+				"sub_id":  subID,
+				"fullURL": fullURL,
+			},
+		})
 	}
 }
 
 func ForwardPostbackToGalaksion(subID string) {
 	if subID == "" {
-		log.Println("Galaksion postback missing subID")
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_error",
+			Extra: map[string]interface{}{
+				"product": "Galaksion",
+				"reason":  "missing_subID",
+			},
+		})
 		return
 	}
 
@@ -132,15 +168,35 @@ func ForwardPostbackToGalaksion(subID string) {
 	// === Forward ===
 	_, err := http.Get(fullURL)
 	if err != nil {
-		log.Println("Failed to send postback to Galaksion:", err)
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_forward_error",
+			Extra: map[string]interface{}{
+				"product": "Galaksion",
+				"sub_id":  subID,
+				"error":   err.Error(),
+			},
+		})
 	} else {
-		log.Println("Forwarded postback to Galaksion for subID:", subID)
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_forwarded",
+			Extra: map[string]interface{}{
+				"product": "Galaksion",
+				"sub_id":  subID,
+				"fullURL": fullURL,
+			},
+		})
 	}
 }
 
 func ForwardPostbackToPopcash(subID, payout string) {
 	if subID == "" {
-		log.Println("Popcash postback missing subID (clickid)")
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_error",
+			Extra: map[string]interface{}{
+				"product": "Popcash",
+				"reason":  "missing_subID",
+			},
+		})
 		return
 	}
 
@@ -190,15 +246,35 @@ func ForwardPostbackToPopcash(subID, payout string) {
 	// === Forward ===
 	_, err := http.Get(fullURL)
 	if err != nil {
-		log.Println("Failed to send postback to Popcash:", err)
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_forward_error",
+			Extra: map[string]interface{}{
+				"product": "Popcash",
+				"clickid": subID,
+				"error":   err.Error(),
+			},
+		})
 	} else {
-		log.Println("Forwarded postback to Popcash for clickid:", subID)
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_forwarded",
+			Extra: map[string]interface{}{
+				"product": "Popcash",
+				"clickid": subID,
+				"fullURL": fullURL,
+			},
+		})
 	}
 }
 
 func ForwardPostbackToClickAdilla(subID, payout string, data map[string]string) {
 	if subID == "" {
-		log.Println("ClickAdilla postback missing click_id")
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_error",
+			Extra: map[string]interface{}{
+				"product": "ClickAdilla",
+				"reason":  "missing_click_id",
+			},
+		})
 		return
 	}
 
@@ -244,8 +320,23 @@ func ForwardPostbackToClickAdilla(subID, payout string, data map[string]string) 
 	// === Forward ke ClickAdilla ===
 	_, err := http.Get(fullURL)
 	if err != nil {
-		log.Println("Failed to send postback to ClickAdilla:", err)
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_forward_error",
+			Extra: map[string]interface{}{
+				"product":  "ClickAdilla",
+				"click_id": subID,
+				"fullURL":  fullURL,
+				"error":    err.Error(),
+			},
+		})
 	} else {
-		log.Println("Forwarded postback to ClickAdilla for click_id:", subID, "URL:", fullURL)
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_forwarded",
+			Extra: map[string]interface{}{
+				"product":  "ClickAdilla",
+				"click_id": subID,
+				"fullURL":  fullURL,
+			},
+		})
 	}
 }

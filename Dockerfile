@@ -20,5 +20,7 @@ COPY --from=builder /run-app /usr/local/bin/
 COPY --from=builder /usr/src/app/config ./config
 COPY --from=builder /usr/src/app/views ./views
 COPY --from=builder /usr/src/app/GeoLite2-City.mmdb ./
+COPY --from=builder /usr/src/app/GeoLite2-ASN.mmdb ./
+COPY --from=builder /usr/src/app/GeoLite2-Country.mmdb ./
 
 CMD ["run-app"]

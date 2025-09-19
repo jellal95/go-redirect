@@ -156,11 +156,14 @@ func clientIP(c *fiber.Ctx) string {
 		if idx := strings.Index(xff, ","); idx > 0 {
 			return strings.TrimSpace(xff[:idx])
 		}
+
 		return strings.TrimSpace(xff)
 	}
+
 	if xr := c.Get("X-Real-Ip"); xr != "" {
 		return strings.TrimSpace(xr)
 	}
+
 	return c.IP()
 }
 
@@ -168,10 +171,12 @@ func refHost(ref string) string {
 	if ref == "" {
 		return ""
 	}
+
 	u, err := url.Parse(ref)
 	if err != nil {
 		return ""
 	}
+
 	return strings.ToLower(u.Host)
 }
 
@@ -188,6 +193,7 @@ func (bf *botFilter) isBadReferrer(host string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -196,20 +202,24 @@ func (bf *botFilter) countryCode(ipStr string, logData *ClickLog) string {
 	if ip == nil {
 		return ""
 	}
+
 	rec, err := bf.geoDB.Country(ip)
 	if err != nil || rec == nil {
 		return ""
 	}
+
 	cc := rec.Country.IsoCode
 	logData.Country = cc
+
 	return cc
 }
 
 func (bf *botFilter) tooMany(ip string) bool {
 	now := time.Now()
 	win := time.Duration(bf.cfg.RateLimitWindowSec) * time.Second
-	max := bf.cfg.RateLimitMax
+	limitMax := bf.cfg.RateLimitMax
 	bf.ipReqMu.Lock()
+
 	defer bf.ipReqMu.Unlock()
 
 	h := bf.ipReqMap[ip]
@@ -223,7 +233,8 @@ func (bf *botFilter) tooMany(ip string) bool {
 	h = h[:j]
 	h = append(h, now)
 	bf.ipReqMap[ip] = h
-	return len(h) > max
+
+	return len(h) > limitMax
 }
 
 func (bf *botFilter) gcRequests() {

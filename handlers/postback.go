@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"go-redirect/models"
 	"go-redirect/utils"
 	"net/http"
@@ -124,34 +123,8 @@ func forwardPostbackWithBreaker(networkKey, product, subID, payout, baseURL stri
 		}
 	}
 
-	// Use circuit breaker for the HTTP request
-	breakers := utils.GetPostbackBreakers()
-	err := breakers.Execute(networkKey, func() error {
-		resp, err := http.Get(fullURL)
-		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
-
-		// Check for HTTP error status codes
-		if resp.StatusCode >= 400 {
-			return fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status)
-		}
-
-		utils.LogInfo(utils.LogEntry{
-			Type: "postback_forwarded",
-			Extra: map[string]interface{}{
-				"product":     product,
-				"sub_id":      subID,
-				"fullURL":     fullURL,
-				"params":      stringMapToInterfaceMap(params),
-				"status_code": resp.StatusCode,
-			},
-		})
-		utils.IncrementPostback()
-		return nil
-	})
-
+	// Simple HTTP request without circuit breaker
+	resp, err := http.Get(fullURL)
 	if err != nil {
 		utils.LogInfo(utils.LogEntry{
 			Type: "postback_forward_error",
@@ -163,8 +136,35 @@ func forwardPostbackWithBreaker(networkKey, product, subID, payout, baseURL stri
 				"network": networkKey,
 			},
 		})
-		utils.IncrementError()
+		return
 	}
+	defer resp.Body.Close()
+
+	// Check for HTTP error status codes
+	if resp.StatusCode >= 400 {
+		utils.LogInfo(utils.LogEntry{
+			Type: "postback_forward_error",
+			Extra: map[string]interface{}{
+				"product":     product,
+				"sub_id":      subID,
+				"fullURL":     fullURL,
+				"status_code": resp.StatusCode,
+				"network":     networkKey,
+			},
+		})
+		return
+	}
+
+	utils.LogInfo(utils.LogEntry{
+		Type: "postback_forwarded",
+		Extra: map[string]interface{}{
+			"product":     product,
+			"sub_id":      subID,
+			"fullURL":     fullURL,
+			"params":      stringMapToInterfaceMap(params),
+			"status_code": resp.StatusCode,
+		},
+	})
 }
 
 // --- Helper Functions ---

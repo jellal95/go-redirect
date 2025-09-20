@@ -5,7 +5,6 @@ import (
 	"go-redirect/geo"
 	"go-redirect/middleware"
 	"os"
-	"time"
 
 	"go-redirect/handlers"
 	"go-redirect/utils"
@@ -79,31 +78,28 @@ func main() {
 	// ========== 5. Request ID middleware ==========
 	app.Use(middleware.RequestID())
 
-	// ========== 6. Console logging dengan metrics ==========
-	app.Use(middleware.RequestLogger())
-
-	// ========== 7. Health & Admin endpoints (tanpa bot filter) ==========
+	// ========== 6. Health & Admin endpoints (no logging, no bot filter) ==========
 	app.Get("/health", handlers.HealthHandler)
 	app.Get("/ready", handlers.ReadinessHandler)
 	app.Get("/logs", handlers.LogsHandler)
+	app.Get("/dashboard", handlers.DashboardHandler)
+	app.Get("/sse", handlers.SSEHandler)
 	app.Get("/postbacks", handlers.GetPostbacks)
-	app.Get("/metrics", handlers.MetricsHandler)
-	app.Post("/metrics/reset", handlers.MetricsResetHandler)
-	app.Get("/analytics/params", handlers.AnalyticsParamsHandler)
-	app.Get("/analytics/referers", handlers.AnalyticsRefererHandler)
-	app.Get("/circuit-breakers", handlers.CircuitBreakersHandler)
-	app.Post("/circuit-breakers/reset/:network", handlers.CircuitBreakerResetHandler)
-	app.Post("/circuit-breakers/reset-all", handlers.CircuitBreakersResetAllHandler)
-
-	// ========== 8. Pasang middleware global bot filter ==========
-	app.Use(bf.Handler())
-
-	// ========== 9. Routes lainnya ==========
-	app.Get("/", handlers.RedirectHandler)
-	app.Get("/postback", handlers.PostbackHandler)
-	app.Get("/pre-sale", handlers.PreSaleHandler)
 	app.Get("/article", handlers.ArticleHandler)
 	app.Get("/main", handlers.MainHandler)
+
+	// ========== 6.5. Postback endpoint (logging only, no bot filter) ==========
+	app.Get("/postback", middleware.RequestLogger(), handlers.PostbackHandler)
+
+	// ========== 7. Bot filter toggle endpoint ==========
+	app.Post("/toggle-bot-filter", handlers.ToggleBotFilterHandler)
+	app.Get("/bot-filter-status", handlers.BotFilterStatusHandler)
+
+	// ========== 8. Protected routes with bot filter + logging ==========
+	// Main redirect endpoint
+	app.Get("/", middleware.RequestLogger(), middleware.ConditionalBotFilter(bf), handlers.RedirectHandler)
+	// Pre-sale endpoint
+	app.Get("/pre-sale", middleware.RequestLogger(), middleware.ConditionalBotFilter(bf), handlers.PreSaleHandler)
 
 	// ========== 10. Start Server dengan Graceful Shutdown ==========
 	port := os.Getenv("PORT")
@@ -111,8 +107,7 @@ func main() {
 		port = "8080"
 	}
 
-	// Start graceful shutdown handler in background
-	go utils.GracefulShutdown(app, 30*time.Second)
+	// Simple server startup
 
 	fmt.Printf("🚀 Server starting on port %s\n", port)
 	utils.LogInfo(utils.LogEntry{
@@ -121,6 +116,7 @@ func main() {
 	})
 
 	if err := app.Listen(":" + port); err != nil {
+
 		utils.LogFatal(utils.LogEntry{
 			Type:  "fatal_error",
 			Extra: map[string]interface{}{"error": err.Error()},

@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Go-Redirect Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            border-left: 5px solid #667eea;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .stat-subtitle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .chart-card h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        
+        .logs-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .logs-header h3 {
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+        
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        .logs-table th,
+        .logs-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .logs-table th {
+            background: #f8f9fa;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .logs-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-offline {
+            background: #f44336;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .live-indicator {
+            color: white;
+            font-weight: 600;
+        }
+        
+        .last-updated {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+        
+        .bot-filter-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 25px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .toggle-switch.active {
+            background: #4CAF50;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(25px);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Go-Redirect Analytics</h1>
+            <p>Real-time Traffic & Conversion Dashboard</p>
+        </div>
+        
+        <div class="top-section">
+            <div class="live-indicator">
+                <span class="status-indicator status-online"></span>
+                Live Analytics
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div class="bot-filter-toggle">
+                    <span>🛡️ Bot Filter</span>
+                    <div class="toggle-switch active" id="botFilterToggle" onclick="toggleBotFilter()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                    <span id="botFilterStatus">ON</span>
+                </div>
+                <div class="last-updated" id="lastUpdated">
+                    Last updated: Loading...
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Traffic</h3>
+                <div class="stat-value" id="totalLogs">-</div>
+                <div class="stat-subtitle">All time requests</div>
+            </div>
+            <div class="stat-card">
+                <h3>Successful Redirects</h3>
+                <div class="stat-value" id="successfulRedirects">-</div>
+                <div class="stat-subtitle" id="successRate">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pre-sale Traffic</h3>
+                <div class="stat-value" id="presaleTraffic">-</div>
+                <div class="stat-subtitle" id="presaleRate">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Bot Blocks</h3>
+                <div class="stat-value" id="blockedRequests">-</div>
+                <div class="stat-subtitle" id="blockRate">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Mobile Traffic</h3>
+                <div class="stat-value" id="mobileTraffic">-</div>
+                <div class="stat-subtitle" id="mobileRate">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Top Browser</h3>
+                <div class="stat-value" id="topBrowser">-</div>
+                <div class="stat-subtitle" id="browserCount">-</div>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>📊 Traffic Distribution</h3>
+                <canvas id="trafficChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>🏆 Top Products</h3>
+                <canvas id="productsChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>📱 Device Types</h3>
+                <canvas id="devicesChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>🌐 Traffic Sources</h3>
+                <canvas id="sourcesChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="logs-section">
+            <div class="logs-header">
+                <h3>📝 Recent Activity</h3>
+                <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Type</th>
+                            <th>Product</th>
+                            <th>Device</th>
+                            <th>Source</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <tr><td colspan="5">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let trafficChart, productsChart, devicesChart, sourcesChart;
+        
+        // Initialize charts
+        function initCharts() {
+            const chartOptions = {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            };
+            
+            // Traffic Distribution Chart
+            const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+            trafficChart = new Chart(trafficCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#43e97b']
+                    }]
+                },
+                options: chartOptions
+            });
+            
+            // Top Products Chart
+            const productsCtx = document.getElementById('productsChart').getContext('2d');
+            productsChart = new Chart(productsCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Clicks',
+                        data: [],
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Devices Chart
+            const devicesCtx = document.getElementById('devicesChart').getContext('2d');
+            devicesChart = new Chart(devicesCtx, {
+                type: 'pie',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#667eea', '#764ba2']
+                    }]
+                },
+                options: chartOptions
+            });
+            
+            // Sources Chart
+            const sourcesCtx = document.getElementById('sourcesChart').getContext('2d');
+            sourcesChart = new Chart(sourcesCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Visits',
+                        data: [],
+                        backgroundColor: '#764ba2'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Fetch and update dashboard data
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch('/logs');
+                const data = await response.json();
+                updateDashboard(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+        
+        // Update dashboard with new data
+        function updateDashboard(data) {
+            // Update stats cards
+            document.getElementById('totalLogs').textContent = data.total_logs.toLocaleString();
+            
+            const redirects = data.type_summary.redirect || 0;
+            const presales = data.type_summary['pre-sale'] || 0;
+            const blocks = data.type_summary.block_request || 0;
+            const mobile = data.device_summary.Mobile || 0;
+            const desktop = data.device_summary.Desktop || 0;
+            
+            document.getElementById('successfulRedirects').textContent = redirects.toLocaleString();
+            document.getElementById('successRate').textContent = `${((redirects / data.total_logs) * 100).toFixed(1)}% success rate`;
+            
+            document.getElementById('presaleTraffic').textContent = presales.toLocaleString();
+            document.getElementById('presaleRate').textContent = `${((presales / data.total_logs) * 100).toFixed(1)}% of traffic`;
+            
+            document.getElementById('blockedRequests').textContent = blocks.toLocaleString();
+            document.getElementById('blockRate').textContent = `${((blocks / data.total_logs) * 100).toFixed(1)}% blocked`;
+            
+            document.getElementById('mobileTraffic').textContent = mobile.toLocaleString();
+            document.getElementById('mobileRate').textContent = `${((mobile / (mobile + desktop)) * 100).toFixed(1)}% mobile`;
+            
+            // Top browser
+            const browsers = Object.entries(data.browser_summary).sort((a, b) => b[1] - a[1]);
+            if (browsers.length > 0) {
+                document.getElementById('topBrowser').textContent = browsers[0][0];
+                document.getElementById('browserCount').textContent = `${browsers[0][1].toLocaleString()} users`;
+            }
+            
+            // Update charts
+            updateCharts(data);
+            
+            // Update logs table
+            updateLogsTable(data.logs);
+            
+            // Update timestamp
+            document.getElementById('lastUpdated').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+        }
+        
+        // Update all charts
+        function updateCharts(data) {
+            // Traffic distribution
+            const trafficLabels = Object.keys(data.type_summary);
+            const trafficData = Object.values(data.type_summary);
+            trafficChart.data.labels = trafficLabels;
+            trafficChart.data.datasets[0].data = trafficData;
+            trafficChart.update();
+            
+            // Top products (top 5)
+            const products = Object.entries(data.product_summary)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            productsChart.data.labels = products.map(p => p[0].substring(0, 20) + '...');
+            productsChart.data.datasets[0].data = products.map(p => p[1]);
+            productsChart.update();
+            
+            // Devices
+            devicesChart.data.labels = Object.keys(data.device_summary);
+            devicesChart.data.datasets[0].data = Object.values(data.device_summary);
+            devicesChart.update();
+            
+            // Sources (top 5)
+            const sources = Object.entries(data.referer_domains)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            sourcesChart.data.labels = sources.map(s => s[0]);
+            sourcesChart.data.datasets[0].data = sources.map(s => s[1]);
+            sourcesChart.update();
+        }
+        
+        // Update logs table
+        function updateLogsTable(logs) {
+            const tbody = document.getElementById('logsTableBody');
+            const recentLogs = logs.slice(-20).reverse(); // Show last 20 logs
+            
+            tbody.innerHTML = recentLogs.map(log => `
+                <tr>
+                    <td>${new Date(log.timestamp).toLocaleTimeString()}</td>
+                    <td><span style="background: ${getTypeColor(log.type)}; padding: 3px 8px; border-radius: 12px; color: white; font-size: 0.8rem;">${log.type}</span></td>
+                    <td>${log.product_name || '-'}</td>
+                    <td>${log.device || '-'}</td>
+                    <td>${log.referer ? new URL(log.referer).hostname : '-'}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // Get color for log type
+        function getTypeColor(type) {
+            const colors = {
+                'redirect': '#4CAF50',
+                'pre-sale': '#2196F3',
+                'block_request': '#f44336',
+                'postback': '#FF9800',
+                'bypass_request': '#9C27B0'
+            };
+            return colors[type] || '#666';
+        }
+        
+        // Refresh data manually
+        function refreshData() {
+            fetchDashboardData();
+        }
+        
+        // Bot filter toggle functions
+        async function toggleBotFilter() {
+            const toggle = document.getElementById('botFilterToggle');
+            const status = document.getElementById('botFilterStatus');
+            const isActive = toggle.classList.contains('active');
+            
+            try {
+                const response = await fetch('/toggle-bot-filter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ enabled: !isActive })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.enabled) {
+                        toggle.classList.add('active');
+                        status.textContent = 'ON';
+                    } else {
+                        toggle.classList.remove('active');
+                        status.textContent = 'OFF';
+                    }
+                }
+            } catch (error) {
+                console.error('Error toggling bot filter:', error);
+            }
+        }
+        
+        // Load bot filter status
+        async function loadBotFilterStatus() {
+            try {
+                const response = await fetch('/bot-filter-status');
+                const result = await response.json();
+                
+                const toggle = document.getElementById('botFilterToggle');
+                const status = document.getElementById('botFilterStatus');
+                
+                if (result.enabled) {
+                    toggle.classList.add('active');
+                    status.textContent = 'ON';
+                } else {
+                    toggle.classList.remove('active');
+                    status.textContent = 'OFF';
+                }
+            } catch (error) {
+                console.error('Error loading bot filter status:', error);
+            }
+        }
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            fetchDashboardData();
+            loadBotFilterStatus();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(fetchDashboardData, 30000);
+        });
+    </script>
+</body>
+</html>

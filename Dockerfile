@@ -22,5 +22,6 @@ COPY --from=builder /usr/src/app/views ./views
 COPY --from=builder /usr/src/app/GeoLite2-City.mmdb ./
 COPY --from=builder /usr/src/app/GeoLite2-ASN.mmdb ./
 COPY --from=builder /usr/src/app/GeoLite2-Country.mmdb ./
+COPY --from=builder /usr/src/app/verify-admitad.txt ./
 
 CMD ["run-app"]

@@ -112,19 +112,12 @@ func (bf *botFilter) Handler() fiber.Handler {
 		// 1) Referrer blacklist
 		if host := refHost(ref); host != "" {
 			if bf.isBadReferrer(host) {
-				utils.LogInfo(utils.LogEntry{
-					Type:      "block_request",
-					IP:        ip,
-					UserAgent: c.Get("User-Agent"),
-					Referer:   c.Get("Referer"),
-					URL:       c.OriginalURL(),
-					Extra: map[string]interface{}{
-						"reason":       "bad_referrer",
-						"referrer":     host,
-						"full_referer": c.Get("Referer"),
-						"source_info":  getSourceInfo(c),
-					},
+				logEntry := buildBlockRequestLog(c, ip, "bad_referrer", map[string]interface{}{
+					"reason":       "bad_referrer",
+					"referrer":     host,
+					"full_referer": c.Get("Referer"),
 				})
+				utils.LogInfo(logEntry)
 
 				return c.Status(fiber.StatusForbidden).Send(nil)
 			}
@@ -133,18 +126,11 @@ func (bf *botFilter) Handler() fiber.Handler {
 		// 2) User-Agent blacklist
 		for _, bad := range bf.cfg.BlacklistUA {
 			if bad != "" && strings.Contains(ua, bad) {
-				utils.LogInfo(utils.LogEntry{
-					Type:      "block_request",
-					IP:        ip,
-					UserAgent: c.Get("User-Agent"),
-					Referer:   c.Get("Referer"),
-					URL:       c.OriginalURL(),
-					Extra: map[string]interface{}{
-						"reason":      "suspicious_ua",
-						"matched_ua":  bad,
-						"source_info": getSourceInfo(c),
-					},
+				logEntry := buildBlockRequestLog(c, ip, "suspicious_ua", map[string]interface{}{
+					"reason":     "suspicious_ua",
+					"matched_ua": bad,
 				})
+				utils.LogInfo(logEntry)
 
 				return c.Status(fiber.StatusForbidden).Send(nil)
 			}
@@ -152,17 +138,10 @@ func (bf *botFilter) Handler() fiber.Handler {
 
 		// 3) Rate limiting
 		if bf.tooMany(ip) {
-			utils.LogInfo(utils.LogEntry{
-				Type:      "block_request",
-				IP:        ip,
-				UserAgent: c.Get("User-Agent"),
-				Referer:   c.Get("Referer"),
-				URL:       c.OriginalURL(),
-				Extra: map[string]interface{}{
-					"reason":      "rate_limit_exceeded",
-					"source_info": getSourceInfo(c),
-				},
+			logEntry := buildBlockRequestLog(c, ip, "rate_limit_exceeded", map[string]interface{}{
+				"reason": "rate_limit_exceeded",
 			})
+			utils.LogInfo(logEntry)
 
 			return c.Status(fiber.StatusForbidden).Send(nil)
 		}
@@ -170,18 +149,11 @@ func (bf *botFilter) Handler() fiber.Handler {
 		// 4) IP prefix block
 		for _, p := range bf.cfg.BlacklistIPPrefix {
 			if strings.HasPrefix(ip, p) {
-				utils.LogInfo(utils.LogEntry{
-					Type:      "block_request",
-					IP:        ip,
-					UserAgent: c.Get("User-Agent"),
-					Referer:   c.Get("Referer"),
-					URL:       c.OriginalURL(),
-					Extra: map[string]interface{}{
-						"reason":      "blacklisted_ip_prefix",
-						"ip_prefix":   p,
-						"source_info": getSourceInfo(c),
-					},
+				logEntry := buildBlockRequestLog(c, ip, "blacklisted_ip_prefix", map[string]interface{}{
+					"reason":    "blacklisted_ip_prefix",
+					"ip_prefix": p,
 				})
+				utils.LogInfo(logEntry)
 
 				return c.Status(fiber.StatusForbidden).Send(nil)
 			}
@@ -191,33 +163,19 @@ func (bf *botFilter) Handler() fiber.Handler {
 		if len(bf.cfg.AllowCountries) > 0 && bf.geoDB != nil && !isLocalhostIP(ip) {
 			cc := bf.countryCode(ip, &logData)
 			if cc == "" {
-				utils.LogInfo(utils.LogEntry{
-					Type:      "block_request",
-					IP:        ip,
-					UserAgent: c.Get("User-Agent"),
-					Referer:   c.Get("Referer"),
-					URL:       c.OriginalURL(),
-					Extra: map[string]interface{}{
-						"reason":      "geo_unknown",
-						"source_info": getSourceInfo(c),
-					},
+				logEntry := buildBlockRequestLog(c, ip, "geo_unknown", map[string]interface{}{
+					"reason": "geo_unknown",
 				})
+				utils.LogInfo(logEntry)
 
 				return c.Status(fiber.StatusForbidden).Send(nil)
 			}
 			if !containsStr(bf.cfg.AllowCountries, cc) {
-				utils.LogInfo(utils.LogEntry{
-					Type:      "block_request",
-					IP:        ip,
-					UserAgent: c.Get("User-Agent"),
-					Referer:   c.Get("Referer"),
-					URL:       c.OriginalURL(),
-					Extra: map[string]interface{}{
-						"reason":      "geo_not_allowed",
-						"countryCode": cc,
-						"source_info": getSourceInfo(c),
-					},
+				logEntry := buildBlockRequestLog(c, ip, "geo_not_allowed", map[string]interface{}{
+					"reason":      "geo_not_allowed",
+					"countryCode": cc,
 				})
+				utils.LogInfo(logEntry)
 
 				return c.Status(fiber.StatusForbidden).Send(nil)
 			}
@@ -225,17 +183,10 @@ func (bf *botFilter) Handler() fiber.Handler {
 
 		// 6) Mobile only
 		if bf.cfg.AllowMobileOnly && !isMobileUA(ua) {
-			utils.LogInfo(utils.LogEntry{
-				Type:      "block_request",
-				IP:        ip,
-				UserAgent: c.Get("User-Agent"),
-				Referer:   c.Get("Referer"),
-				URL:       c.OriginalURL(),
-				Extra: map[string]interface{}{
-					"reason":      "non_mobile_device",
-					"source_info": getSourceInfo(c),
-				},
+			logEntry := buildBlockRequestLog(c, ip, "non_mobile_device", map[string]interface{}{
+				"reason": "non_mobile_device",
 			})
+			utils.LogInfo(logEntry)
 
 			return c.Status(fiber.StatusForbidden).Send(nil)
 		}
@@ -442,22 +393,51 @@ func getSourceInfo(c *fiber.Ctx) map[string]interface{} {
 		sourceInfo["x_forwarded_proto"] = xforwarded
 	}
 
-	// Query parameters that might indicate traffic source
+	return sourceInfo
+}
+
+// buildBlockRequestLog creates a comprehensive log entry for blocked requests
+func buildBlockRequestLog(c *fiber.Ctx, ip, reason string, extra map[string]interface{}) utils.LogEntry {
+	// Build query params map
 	queryParams := make(map[string]string)
 	c.Request().URI().QueryArgs().VisitAll(func(k, v []byte) {
-		key := string(k)
-		// Only log source-related query params to avoid clutter
-		if strings.Contains(strings.ToLower(key), "utm") ||
-			strings.Contains(strings.ToLower(key), "ref") ||
-			strings.Contains(strings.ToLower(key), "source") ||
-			strings.Contains(strings.ToLower(key), "campaign") ||
-			key == "gclid" || key == "fbclid" {
-			queryParams[key] = string(v)
-		}
+		queryParams[string(k)] = string(v)
 	})
-	if len(queryParams) > 0 {
-		sourceInfo["source_params"] = queryParams
+
+	// Build headers map (selective - avoid sensitive headers)
+	headers := make(map[string]string)
+	importantHeaders := []string{"User-Agent", "Referer", "Accept", "Accept-Language", "Accept-Encoding"}
+	for _, header := range importantHeaders {
+		if value := c.Get(header); value != "" {
+			headers[header] = value
+		}
 	}
 
-	return sourceInfo
+	// Add X-Forwarded headers
+	forwardHeaders := []string{"X-Forwarded-For", "X-Real-IP", "X-Forwarded-Proto"}
+	for _, header := range forwardHeaders {
+		if value := c.Get(header); value != "" {
+			headers[header] = value
+		}
+	}
+
+	// Merge extra info with source info
+	if extra == nil {
+		extra = make(map[string]interface{})
+	}
+	sourceInfo := getSourceInfo(c)
+	for k, v := range sourceInfo {
+		extra[k] = v
+	}
+
+	return utils.LogEntry{
+		Type:        "block_request",
+		IP:          ip,
+		UserAgent:   c.Get("User-Agent"),
+		Referer:     c.Get("Referer"),
+		URL:         c.OriginalURL(),
+		QueryParams: queryParams,
+		Headers:     headers,
+		Extra:       extra,
+	}
 }

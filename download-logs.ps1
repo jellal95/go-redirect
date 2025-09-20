@@ -42,7 +42,6 @@
     - Works with Fly.io persistent volume at /logs path
     - Automatically retries failed downloads (up to 3 times)
     - JSONL files are merged intelligently to avoid duplicates
-    - Supports emoji output for better readability
 #>
 
 param(
@@ -53,11 +52,11 @@ param(
     [switch]$Backup = $false
 )
 
-Write-Host "🚀 Starting Fly.io Log Download & Cleanup..." -ForegroundColor Cyan
+Write-Host "=== Fly.io Log Download & Cleanup ===" -ForegroundColor Cyan
 Write-Host ""
 
 # Display configuration
-Write-Host "📋 Configuration:" -ForegroundColor Blue
+Write-Host "Configuration:" -ForegroundColor Blue
 if ($NoMerge) {
     Write-Host "   - Mode: Replace existing local files" -ForegroundColor Magenta
 } else {
@@ -83,27 +82,34 @@ if ($Backup) {
 Write-Host "   - Local path: $LocalLogsPath" -ForegroundColor Gray
 Write-Host ""
 
+# Create local directory if needed
 if (!(Test-Path $LocalLogsPath)) {
     New-Item -ItemType Directory -Path $LocalLogsPath -Force | Out-Null
     Write-Host "Created local logs directory: $LocalLogsPath" -ForegroundColor Green
 }
 
+# Get Fly.io machine info
+Write-Host "Getting Fly.io machine information..." -ForegroundColor Yellow
 $machineList = flyctl machines list --json | ConvertFrom-Json
 if (!$machineList -or $machineList.Count -eq 0) {
-    Write-Host "No running machines found. Exiting..." -ForegroundColor Red
+    Write-Host "ERROR: No running machines found. Exiting..." -ForegroundColor Red
     exit 1
 }
 
 $machineId = $machineList[0].id
 Write-Host "Found machine: $machineId" -ForegroundColor Yellow
 
-Write-Host "📂 Listing log files on remote server..." -ForegroundColor Yellow
-
-# Use the correct path from fly.toml (LOG_PATH=/logs)
-$logFilesList = flyctl ssh console --machine $machineId -C "find /logs -name '*.jsonl' -type f 2>/dev/null || find /app/logs -name '*.jsonl' -type f 2>/dev/null"
+# List log files on remote server
+Write-Host "Listing log files on remote server..." -ForegroundColor Yellow
+# First try /logs path (production), then /app/logs (fallback)
+$logFilesList = flyctl ssh console --machine $machineId -C "find /logs -name '*.jsonl' -type f"
+if ([string]::IsNullOrWhiteSpace($logFilesList) -or $logFilesList -match "No such file") {
+    Write-Host "   Trying /app/logs path..." -ForegroundColor Gray
+    $logFilesList = flyctl ssh console --machine $machineId -C "find /app/logs -name '*.jsonl' -type f"
+}
 
 if ([string]::IsNullOrWhiteSpace($logFilesList) -or $logFilesList -match "No such file") {
-    Write-Host "❌ No .jsonl log files found in /logs/ or /app/logs/" -ForegroundColor Red
+    Write-Host "ERROR: No .jsonl log files found in /logs/ or /app/logs/" -ForegroundColor Red
     Write-Host "   This might be because:" -ForegroundColor Yellow
     Write-Host "   - No logs have been generated yet" -ForegroundColor Gray
     Write-Host "   - LOG_PATH environment variable not set correctly" -ForegroundColor Gray
@@ -111,22 +117,33 @@ if ([string]::IsNullOrWhiteSpace($logFilesList) -or $logFilesList -match "No suc
     exit 1
 }
 
-$logFiles = $logFilesList -split "`n" | Where-Object { 
-    $_ -ne "" -and 
-    $_ -notmatch "Connecting" -and 
-    $_ -notmatch "Error" -and
-    $_ -notmatch "Warning" -and
-    $_.Trim() -ne ""
+# Filter and clean log files list - only keep actual file paths
+$logFiles = @()
+if (![string]::IsNullOrWhiteSpace($logFilesList)) {
+    $allLines = $logFilesList -split "`n"
+    foreach ($line in $allLines) {
+        $cleanLine = $line.Trim()
+        if ($cleanLine -ne "" -and 
+            $cleanLine -notmatch "Connecting" -and 
+            $cleanLine -notmatch "Error" -and
+            $cleanLine -notmatch "Warning" -and
+            $cleanLine -notmatch "complete" -and
+            $cleanLine -notmatch "handle is invalid" -and
+            $cleanLine.StartsWith("/") -and
+            $cleanLine.EndsWith(".jsonl")) {
+            $logFiles += $cleanLine
+        }
+    }
 }
 
 # Apply date filter if specified
 if ($DateFilter) {
     $logFiles = $logFiles | Where-Object { $_ -like "*$DateFilter*" }
-    Write-Host "🔍 Applied date filter '$DateFilter': $($logFiles.Count) files match" -ForegroundColor Cyan
+    Write-Host "Applied date filter '$DateFilter': $($logFiles.Count) files match" -ForegroundColor Cyan
 }
 
 if ($logFiles.Count -eq 0) {
-    Write-Host "No valid log files found" -ForegroundColor Red
+    Write-Host "ERROR: No valid log files found" -ForegroundColor Red
     exit 1
 }
 
@@ -135,15 +152,17 @@ foreach ($file in $logFiles) {
     Write-Host "   - $(Split-Path $file -Leaf)" -ForegroundColor Gray
 }
 
+# Initialize counters
 $downloadedCount = 0
 $deletedCount = 0
-$skippedCount = 0
 $errorCount = 0
-
 $totalFiles = $logFiles.Count
-Write-Host "📥 Starting download process for $totalFiles files..." -ForegroundColor Green
+
+Write-Host ""
+Write-Host "Starting download process for $totalFiles files..." -ForegroundColor Green
 Write-Host ""
 
+# Process each log file
 for ($i = 0; $i -lt $logFiles.Count; $i++) {
     $logFile = $logFiles[$i]
     $fileIndex = $i + 1
@@ -156,12 +175,12 @@ for ($i = 0; $i -lt $logFiles.Count; $i++) {
     if ($Backup -and (Test-Path $localPath)) {
         $backupPath = "$localPath.backup.$(Get-Date -Format 'yyyyMMdd-HHmmss')"
         Copy-Item $localPath $backupPath
-        Write-Host "   💾 Created backup: $(Split-Path $backupPath -Leaf)" -ForegroundColor Yellow
+        Write-Host "   * Created backup: $(Split-Path $backupPath -Leaf)" -ForegroundColor Yellow
     }
     
     $tempPath = "$localPath.temp"
     
-    Write-Host "   📩 Downloading from remote..." -ForegroundColor Cyan
+    Write-Host "   * Downloading from remote..." -ForegroundColor Cyan
     
     # Download with retry logic
     $retryCount = 0
@@ -170,7 +189,7 @@ for ($i = 0; $i -lt $logFiles.Count; $i++) {
     
     while ($retryCount -lt $maxRetries -and !$downloadSuccess) {
         if ($retryCount -gt 0) {
-            Write-Host "   🔄 Retry $retryCount/$maxRetries..." -ForegroundColor Yellow
+            Write-Host "   * Retry $retryCount/$maxRetries..." -ForegroundColor Yellow
             Start-Sleep -Seconds 2
         }
         
@@ -185,38 +204,54 @@ for ($i = 0; $i -lt $logFiles.Count; $i++) {
     
     if ($downloadSuccess) {
         $fileSize = [math]::Round((Get-Item $tempPath).Length / 1KB, 2)
-        Write-Host "   ✓ Download successful ($fileSize KB)" -ForegroundColor Green
+        Write-Host "   * Download successful ($fileSize KB)" -ForegroundColor Green
         
         # Handle merge/replace logic
         if ((Test-Path $localPath) -and !$NoMerge) {
-            Write-Host "   🔀 Merging with existing local file..." -ForegroundColor Yellow
-            
             try {
-                # Read existing and new content
                 $existingContent = Get-Content $localPath -Raw -ErrorAction Stop
                 $newContent = Get-Content $tempPath -Raw -ErrorAction Stop
                 
-                # For JSONL files, merge line by line to avoid duplicates
-                if ($fileName -like "*.jsonl") {
+                # Check if content is identical - skip if same
+                if ($existingContent -eq $newContent) {
+                    Write-Host "   * Content identical - skipping merge" -ForegroundColor Gray
+                    Remove-Item $tempPath -Force
+                } elseif ($fileName -like "*.jsonl") {
+                    Write-Host "   * Merging with existing local file..." -ForegroundColor Yellow
+                    
                     $existingLines = if ($existingContent) { $existingContent -split "`n" | Where-Object { $_.Trim() -ne "" } } else { @() }
                     $newLines = if ($newContent) { $newContent -split "`n" | Where-Object { $_.Trim() -ne "" } } else { @() }
                     
-                    # Combine and remove duplicates based on timestamp
-                    $allLines = @($existingLines) + @($newLines) | Sort-Object -Unique
-                    $mergedContent = $allLines -join "`n"
+                    # Check if new content is subset of existing (already merged)
+                    $newUniqueLines = @()
+                    foreach ($newLine in $newLines) {
+                        if ($existingLines -notcontains $newLine) {
+                            $newUniqueLines += $newLine
+                        }
+                    }
                     
-                    Set-Content $localPath $mergedContent -NoNewline -ErrorAction Stop
-                    $newSize = [math]::Round((Get-Item $localPath).Length / 1KB, 2)
-                    Write-Host "   ✓ Merged successfully (now $newSize KB)" -ForegroundColor Green
+                    if ($newUniqueLines.Count -eq 0) {
+                        Write-Host "   * All new content already exists - skipping merge" -ForegroundColor Gray
+                        Remove-Item $tempPath -Force
+                    } else {
+                        # Merge only unique new lines
+                        $allLines = @($existingLines) + @($newUniqueLines) | Sort-Object -Unique
+                        $mergedContent = $allLines -join "`n"
+                        
+                        Set-Content $localPath $mergedContent -NoNewline -ErrorAction Stop
+                        $newSize = [math]::Round((Get-Item $localPath).Length / 1KB, 2)
+                        Write-Host "   * Merged $($newUniqueLines.Count) new lines (now $newSize KB)" -ForegroundColor Green
+                        Remove-Item $tempPath -Force
+                    }
                 } else {
-                    # For non-JSONL files, simple append
+                    # Non-JSONL files - simple check and append
+                    Write-Host "   * Appending new content..." -ForegroundColor Yellow
                     Add-Content $localPath $newContent -ErrorAction Stop
-                    Write-Host "   ✓ Appended to existing file" -ForegroundColor Green
+                    Write-Host "   * Appended to existing file" -ForegroundColor Green
+                    Remove-Item $tempPath -Force
                 }
-                
-                Remove-Item $tempPath -Force
             } catch {
-                Write-Host "   ❌ Error during merge: $($_.Exception.Message)" -ForegroundColor Red
+                Write-Host "   * ERROR during merge: $($_.Exception.Message)" -ForegroundColor Red
                 $errorCount++
                 continue
             }
@@ -224,46 +259,57 @@ for ($i = 0; $i -lt $logFiles.Count; $i++) {
             # Replace mode or no existing file
             if (Test-Path $localPath) {
                 Remove-Item $localPath -Force
-                Write-Host "   🔄 Replaced existing local file" -ForegroundColor Yellow
+                Write-Host "   * Replaced existing local file" -ForegroundColor Yellow
             }
             Move-Item $tempPath $localPath
-            Write-Host "   ✓ Saved to local file" -ForegroundColor Green
+            Write-Host "   * Saved to local file" -ForegroundColor Green
         }
         
         $downloadedCount++
         
         # Delete remote file if requested
         if (!$NoDelete) {
-            Write-Host "   🗑️ Deleting remote file..." -ForegroundColor Yellow
+            Write-Host "   * Deleting remote file..." -ForegroundColor Yellow
             
             $deleteRetries = 0
             $maxDeleteRetries = 2
             $deleteSuccess = $false
             
             while ($deleteRetries -lt $maxDeleteRetries -and !$deleteSuccess) {
-                flyctl ssh console --machine $machineId -C "rm '$logFile'" 2>$null
+                # Execute delete command
+                $deleteOutput = flyctl ssh console --machine $machineId -C "rm -f '$logFile'" 2>&1
                 
-                if ($LASTEXITCODE -eq 0) {
+                # Give it a moment and then verify the file is gone
+                Start-Sleep -Seconds 2
+                
+                # Check if file still exists by trying to list it
+                $fileCheck = flyctl ssh console --machine $machineId -C "ls -la '$logFile'" 2>&1
+                
+                # If ls command fails with "No such file or directory", the file was deleted
+                if ($fileCheck -match "No such file or directory" -or $fileCheck -match "cannot access") {
                     $deleteSuccess = $true
                     $deletedCount++
-                    Write-Host "   ✓ Remote file deleted" -ForegroundColor Green
+                    Write-Host "   * Remote file deleted successfully" -ForegroundColor Green
                 } else {
                     $deleteRetries++
                     if ($deleteRetries -lt $maxDeleteRetries) {
-                        Write-Host "   🔄 Delete retry $deleteRetries/$maxDeleteRetries..." -ForegroundColor Yellow
-                        Start-Sleep -Seconds 1
+                        Write-Host "   * Delete retry $deleteRetries/$maxDeleteRetries..." -ForegroundColor Yellow
+                        Write-Host "   * Debug - File check output: $fileCheck" -ForegroundColor Gray
+                        Start-Sleep -Seconds 2
+                    } else {
+                        Write-Host "   * Debug - Final file check output: $fileCheck" -ForegroundColor Gray
                     }
                 }
             }
             
             if (!$deleteSuccess) {
-                Write-Host "   ⚠️ Failed to delete remote file after $maxDeleteRetries retries" -ForegroundColor Red
+                Write-Host "   * WARNING: Failed to delete remote file after $maxDeleteRetries retries" -ForegroundColor Red
             }
         } else {
-            Write-Host "   🗂 Keeping remote file (NoDelete mode)" -ForegroundColor Gray
+            Write-Host "   * Keeping remote file (NoDelete mode)" -ForegroundColor Gray
         }
     } else {
-        Write-Host "   ❌ Download failed after $maxRetries retries" -ForegroundColor Red
+        Write-Host "   * ERROR: Download failed after $maxRetries retries" -ForegroundColor Red
         $errorCount++
         if (Test-Path $tempPath) {
             Remove-Item $tempPath -Force
@@ -273,32 +319,33 @@ for ($i = 0; $i -lt $logFiles.Count; $i++) {
     Write-Host ""
 }
 
+# Summary
 Write-Host ""
-Write-Host "="*60 -ForegroundColor Cyan
-Write-Host "📈 DOWNLOAD SUMMARY" -ForegroundColor Cyan
-Write-Host "="*60 -ForegroundColor Cyan
+Write-Host "============================================================" -ForegroundColor Cyan
+Write-Host "DOWNLOAD SUMMARY" -ForegroundColor Cyan
+Write-Host "============================================================" -ForegroundColor Cyan
 
 $successRate = if ($totalFiles -gt 0) { [math]::Round(($downloadedCount / $totalFiles) * 100, 1) } else { 0 }
 
-Write-Host "📁 Files processed: $totalFiles" -ForegroundColor White
-Write-Host "✅ Successfully downloaded: $downloadedCount ($successRate%)" -ForegroundColor Green
+Write-Host "Files processed: $totalFiles" -ForegroundColor White
+Write-Host "Successfully downloaded: $downloadedCount ($successRate%)" -ForegroundColor Green
 
 if (!$NoDelete) {
-    Write-Host "🗑️ Successfully deleted from remote: $deletedCount" -ForegroundColor Green
+    Write-Host "Successfully deleted from remote: $deletedCount" -ForegroundColor Green
 } else {
-    Write-Host "🗂 Remote files kept (NoDelete mode)" -ForegroundColor Yellow
+    Write-Host "Remote files kept (NoDelete mode)" -ForegroundColor Yellow
 }
 
 if ($errorCount -gt 0) {
-    Write-Host "❌ Errors encountered: $errorCount" -ForegroundColor Red
+    Write-Host "Errors encountered: $errorCount" -ForegroundColor Red
 }
 
-Write-Host "📌 Local storage: $((Get-Item $LocalLogsPath).FullName)" -ForegroundColor Gray
+Write-Host "Local storage: $((Get-Item $LocalLogsPath).FullName)" -ForegroundColor Gray
 
 # Show local files with details
 if ($downloadedCount -gt 0) {
     Write-Host ""
-    Write-Host "🗄 Local log files:" -ForegroundColor Green
+    Write-Host "Local log files:" -ForegroundColor Green
     
     $localFiles = Get-ChildItem $LocalLogsPath -Filter "*.jsonl" | Sort-Object LastWriteTime -Descending
     $totalSizeKB = 0
@@ -307,30 +354,29 @@ if ($downloadedCount -gt 0) {
         $sizeKB = [math]::Round($file.Length / 1KB, 2)
         $totalSizeKB += $sizeKB
         $lastModified = $file.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")
-        Write-Host "   • $($file.Name)" -ForegroundColor White -NoNewline
-        Write-Host " ($sizeKB KB, modified: $lastModified)" -ForegroundColor Gray
+        Write-Host "   * $($file.Name) ($sizeKB KB, modified: $lastModified)" -ForegroundColor Gray
     }
     
     Write-Host ""
-    Write-Host "📊 Total local storage used: $([math]::Round($totalSizeKB, 2)) KB" -ForegroundColor Cyan
+    Write-Host "Total local storage used: $([math]::Round($totalSizeKB, 2)) KB" -ForegroundColor Cyan
     
     # Show backup files if any
     $backupFiles = Get-ChildItem $LocalLogsPath -Filter "*.backup.*" | Sort-Object LastWriteTime -Descending
     if ($backupFiles.Count -gt 0) {
         Write-Host ""
-        Write-Host "💾 Backup files created: $($backupFiles.Count)" -ForegroundColor Yellow
+        Write-Host "Backup files created: $($backupFiles.Count)" -ForegroundColor Yellow
         foreach ($backup in $backupFiles) {
             $sizeKB = [math]::Round($backup.Length / 1KB, 2)
-            Write-Host "   • $($backup.Name) ($sizeKB KB)" -ForegroundColor Gray
+            Write-Host "   * $($backup.Name) ($sizeKB KB)" -ForegroundColor Gray
         }
     }
 }
 
 Write-Host ""
-Write-Host "="*60 -ForegroundColor Cyan
+Write-Host "============================================================" -ForegroundColor Cyan
 if ($errorCount -eq 0) {
-    Write-Host "✅ Log download and cleanup completed successfully!" -ForegroundColor Green
+    Write-Host "SUCCESS: Log download and cleanup completed!" -ForegroundColor Green
 } else {
-    Write-Host "⚠️ Log download completed with $errorCount errors" -ForegroundColor Yellow
+    Write-Host "COMPLETED: Log download finished with $errorCount errors" -ForegroundColor Yellow
 }
-Write-Host "="*60 -ForegroundColor Cyan
+Write-Host "============================================================" -ForegroundColor Cyan

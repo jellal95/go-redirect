@@ -561,10 +561,6 @@
                 <h3>📱 Device Types</h3>
                 <canvas id="devicesChart"></canvas>
             </div>
-            <div class="chart-card">
-                <h3>🌐 Traffic Sources</h3>
-                <canvas id="sourcesChart"></canvas>
-            </div>
         </div>
         
         <!-- Traffic Sources Section -->
@@ -575,6 +571,12 @@
                     <select id="sourcesSort" onchange="updateSourcesTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
                         <option value="count">Sort by Count</option>
                         <option value="name">Sort by Name</option>
+                    </select>
+                    <select id="sourcesPageSize" onchange="currentSourcesPage = 1; updateSourcesTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
+                        <option value="10">10 per page</option>
+                        <option value="25" selected>25 per page</option>
+                        <option value="50">50 per page</option>
+                        <option value="all">Show All</option>
                     </select>
                     <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
                 </div>
@@ -595,6 +597,16 @@
                         <tr><td colspan="5">Loading...</td></tr>
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Sources Pagination -->
+            <div class="pagination">
+                <div class="pagination-info" id="sourcesPaginationInfo">
+                    Showing 0-0 of 0 sources
+                </div>
+                <div class="pagination-controls" id="sourcesPaginationControls">
+                    <!-- Pagination buttons will be generated here -->
+                </div>
             </div>
         </div>
         
@@ -684,7 +696,7 @@
     </div>
 
     <script>
-        let trafficChart, productsChart, devicesChart, sourcesChart;
+        let trafficChart, productsChart, devicesChart;
         
         // Initialize charts
         function initCharts() {
@@ -745,34 +757,6 @@
                     }]
                 },
                 options: chartOptions
-            });
-            
-            // Sources Chart
-            const sourcesCtx = document.getElementById('sourcesChart').getContext('2d');
-            sourcesChart = new Chart(sourcesCtx, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Visits',
-                        data: [],
-                        backgroundColor: '#764ba2'
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true
-                        }
-                    }
-                }
             });
         }
         
@@ -878,14 +862,6 @@
             devicesChart.data.labels = Object.keys(data.device_summary);
             devicesChart.data.datasets[0].data = Object.values(data.device_summary);
             devicesChart.update();
-            
-            // Sources (top 5)
-            const sources = Object.entries(data.referer_domains)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5);
-            sourcesChart.data.labels = sources.map(s => s[0]);
-            sourcesChart.data.datasets[0].data = sources.map(s => s[1]);
-            sourcesChart.update();
         }
         
         // Update logs table dengan filtering dan pagination
@@ -1087,6 +1063,54 @@
             renderPagination();
         }
         
+        // Sources pagination helper functions
+        function updateSourcesPaginationInfo(totalItems, currentPage, totalPages) {
+            const infoElement = document.getElementById('sourcesPaginationInfo');
+            const controlsElement = document.getElementById('sourcesPaginationControls');
+            
+            if (sourcesPageSize === 'all' || totalItems === 0) {
+                infoElement.textContent = `Showing ${totalItems} sources`;
+                controlsElement.innerHTML = '';
+                return;
+            }
+            
+            const startItem = Math.min(((currentPage - 1) * sourcesPageSize) + 1, totalItems);
+            const endItem = Math.min(currentPage * sourcesPageSize, totalItems);
+            
+            infoElement.textContent = `Showing ${startItem}-${endItem} of ${totalItems} sources`;
+            
+            // Generate pagination controls
+            let buttonsHtml = '';
+            
+            // Previous button
+            buttonsHtml += `<button class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changeSourcesPage(${currentPage - 1})">&laquo;</button>`;
+            
+            // Page numbers
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                buttonsHtml += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="changeSourcesPage(${i})">${i}</button>`;
+            }
+            
+            // Next button
+            buttonsHtml += `<button class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changeSourcesPage(${currentPage + 1})">&raquo;</button>`;
+            
+            controlsElement.innerHTML = buttonsHtml;
+        }
+        
+        function changeSourcesPage(page) {
+            const totalPages = sourcesPageSize === 'all' ? 1 : Math.ceil(allSourcesData.length / sourcesPageSize);
+            if (page < 1 || page > totalPages) return;
+            currentSourcesPage = page;
+            updateSourcesTable();
+        }
+        
         // Update sources table
         function updateSourcesTable(refererDomains) {
             if (!refererDomains) refererDomains = sourcesData;
@@ -1094,6 +1118,10 @@
             
             const tbody = document.getElementById('sourcesTableBody');
             const sortBy = document.getElementById('sourcesSort')?.value || 'count';
+            const pageSize = document.getElementById('sourcesPageSize')?.value || '25';
+            
+            // Update sources page size
+            sourcesPageSize = pageSize === 'all' ? 'all' : parseInt(pageSize);
             
             // Convert to array and add "Direct" traffic
             let sources = Object.entries(refererDomains || {});
@@ -1104,8 +1132,12 @@
                 sources.push(['Direct Traffic', directCount]);
             }
             
+            // Store all sources data
+            allSourcesData = [...sources];
+            
             if (sources.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No traffic sources data</td></tr>';
+                updateSourcesPaginationInfo(0, 0, 0);
                 return;
             }
             
@@ -1118,14 +1150,37 @@
                 }
             });
             
+            // Calculate pagination
+            const totalItems = sources.length;
+            const totalPages = sourcesPageSize === 'all' ? 1 : Math.ceil(totalItems / sourcesPageSize);
+            
+            // Adjust current page if necessary
+            if (currentSourcesPage > totalPages) {
+                currentSourcesPage = totalPages || 1;
+            }
+            
+            // Get current page data
+            let currentPageSources;
+            if (sourcesPageSize === 'all') {
+                currentPageSources = sources;
+            } else {
+                const startIndex = (currentSourcesPage - 1) * sourcesPageSize;
+                const endIndex = startIndex + sourcesPageSize;
+                currentPageSources = sources.slice(startIndex, endIndex);
+            }
+            
             // Calculate total for percentages
             const total = sources.reduce((sum, [, count]) => sum + count, 0);
             const maxCount = Math.max(...sources.map(([, count]) => count));
             
-            // Generate table rows
-            tbody.innerHTML = sources.map(([domain, count], index) => {
+            // Generate table rows with correct numbering for pagination
+            tbody.innerHTML = currentPageSources.map(([domain, count], index) => {
                 const percentage = ((count / total) * 100).toFixed(1);
                 const barWidth = (count / maxCount) * 100;
+                
+                // Calculate the actual row number (considering pagination)
+                const rowNumber = sourcesPageSize === 'all' ? index + 1 : 
+                    ((currentSourcesPage - 1) * sourcesPageSize) + index + 1;
                 
                 // Determine source type for styling
                 let sourceClass = '';
@@ -1144,7 +1199,7 @@
                 
                 return `
                     <tr>
-                        <td><strong>${index + 1}</strong></td>
+                        <td><strong>${rowNumber}</strong></td>
                         <td>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span>${sourceIcon}</span>
@@ -1163,6 +1218,9 @@
                     </tr>
                 `;
             }).join('');
+            
+            // Update pagination info
+            updateSourcesPaginationInfo(totalItems, currentSourcesPage, totalPages);
         }
         
         // Get color for log type
@@ -1242,7 +1300,12 @@
         let pageSize = 20;
         let sortField = 'timestamp';
         let sortDirection = 'desc';
+        
+        // Sources table management
         let sourcesData = {};
+        let allSourcesData = [];
+        let currentSourcesPage = 1;
+        let sourcesPageSize = 25;
         
         function showQueryModal(logIndex) {
             const log = currentLogsData[currentLogsData.length - 1 - logIndex]; // Reverse index

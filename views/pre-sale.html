@@ -329,11 +329,27 @@
     const params = new URLSearchParams(window.location.search);
     const filteredParams = new URLSearchParams();
 
+    // Preserve existing query parameters (except product)
     params.forEach((value, key) => {
         if (key !== "product") {
             filteredParams.append(key, value);
         }
     });
+
+    // Add referrer information if available for tracking
+    if (document.referrer && !filteredParams.has('ref')) {
+        try {
+            const refUrl = new URL(document.referrer);
+            if (refUrl.hostname !== window.location.hostname) {
+                filteredParams.append('ref', refUrl.hostname);
+            }
+        } catch (e) {
+            // Ignore invalid referrer URLs
+        }
+    }
+
+    // Add pre-sale flag to indicate this came from pre-sale page
+    filteredParams.append('from', 'presale');
 
     const queryString = filteredParams.toString();
     const redirectUrl = queryString ? "/?product={{.ID}}&" + queryString : "/?product={{.ID}}";

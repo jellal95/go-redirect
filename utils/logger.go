@@ -9,6 +9,18 @@ import (
 	"time"
 )
 
+var wibLocation *time.Location
+
+func init() {
+	// Load WIB timezone (UTC+7)
+	loc, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		// Fallback to fixed UTC+7 if timezone data not available
+		loc = time.FixedZone("WIB", 7*60*60)
+	}
+	wibLocation = loc
+}
+
 var Logs []LogEntry
 var logMu sync.Mutex
 
@@ -32,12 +44,21 @@ func LogInfo(entry LogEntry) error {
 	logMu.Lock()
 	defer logMu.Unlock()
 
+	// Set WIB timestamp if not already set
+	if entry.Timestamp.IsZero() {
+		entry.Timestamp = time.Now().In(wibLocation)
+	}
+
 	// --- append memory ---
 	Logs = append(Logs, entry)
 
 	// --- append file ---
-	dateStr := time.Now().Format("2006-01-02")
-	folder := "logs" // mount Fly Volume di sini
+	dateStr := time.Now().In(wibLocation).Format("2006-01-02")
+	// Use /logs for production (Fly.io volume), ./logs for development
+	folder := os.Getenv("LOG_PATH")
+	if folder == "" {
+		folder = "logs" // default for development
+	}
 	os.MkdirAll(folder, 0755)
 	filename := fmt.Sprintf("%s/log-%s.jsonl", folder, dateStr)
 
@@ -73,7 +94,11 @@ func LogsSummary() map[string]interface{} {
 
 	// --- optional baca file log hari ini ---
 	dateStr := time.Now().Format("2006-01-02")
-	filename := fmt.Sprintf("logs/log-%s.jsonl", dateStr)
+	folder := os.Getenv("LOG_PATH")
+	if folder == "" {
+		folder = "logs" // default for development
+	}
+	filename := fmt.Sprintf("%s/log-%s.jsonl", folder, dateStr)
 	file, err := os.Open(filename)
 	if err == nil {
 		defer file.Close()

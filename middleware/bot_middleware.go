@@ -113,12 +113,16 @@ func (bf *botFilter) Handler() fiber.Handler {
 		if host := refHost(ref); host != "" {
 			if bf.isBadReferrer(host) {
 				utils.LogInfo(utils.LogEntry{
-					Type: "block_request",
+					Type:      "block_request",
+					IP:        ip,
+					UserAgent: c.Get("User-Agent"),
+					Referer:   c.Get("Referer"),
+					URL:       c.OriginalURL(),
 					Extra: map[string]interface{}{
-						"reason":    "bad_referrer",
-						"referrer":  host,
-						"ip":        ip,
-						"userAgent": ua,
+						"reason":       "bad_referrer",
+						"referrer":     host,
+						"full_referer": c.Get("Referer"),
+						"source_info":  getSourceInfo(c),
 					},
 				})
 
@@ -130,11 +134,15 @@ func (bf *botFilter) Handler() fiber.Handler {
 		for _, bad := range bf.cfg.BlacklistUA {
 			if bad != "" && strings.Contains(ua, bad) {
 				utils.LogInfo(utils.LogEntry{
-					Type: "block_request",
+					Type:      "block_request",
+					IP:        ip,
+					UserAgent: c.Get("User-Agent"),
+					Referer:   c.Get("Referer"),
+					URL:       c.OriginalURL(),
 					Extra: map[string]interface{}{
-						"reason": "suspicious_ua",
-						"ua":     bad,
-						"ip":     ip,
+						"reason":      "suspicious_ua",
+						"matched_ua":  bad,
+						"source_info": getSourceInfo(c),
 					},
 				})
 
@@ -145,10 +153,14 @@ func (bf *botFilter) Handler() fiber.Handler {
 		// 3) Rate limiting
 		if bf.tooMany(ip) {
 			utils.LogInfo(utils.LogEntry{
-				Type: "block_request",
+				Type:      "block_request",
+				IP:        ip,
+				UserAgent: c.Get("User-Agent"),
+				Referer:   c.Get("Referer"),
+				URL:       c.OriginalURL(),
 				Extra: map[string]interface{}{
-					"reason": "rate_limit_exceeded",
-					"ip":     ip,
+					"reason":      "rate_limit_exceeded",
+					"source_info": getSourceInfo(c),
 				},
 			})
 
@@ -159,11 +171,15 @@ func (bf *botFilter) Handler() fiber.Handler {
 		for _, p := range bf.cfg.BlacklistIPPrefix {
 			if strings.HasPrefix(ip, p) {
 				utils.LogInfo(utils.LogEntry{
-					Type: "block_request",
+					Type:      "block_request",
+					IP:        ip,
+					UserAgent: c.Get("User-Agent"),
+					Referer:   c.Get("Referer"),
+					URL:       c.OriginalURL(),
 					Extra: map[string]interface{}{
-						"reason":    "blacklisted_ip_prefix",
-						"ip_prefix": p,
-						"ip":        ip,
+						"reason":      "blacklisted_ip_prefix",
+						"ip_prefix":   p,
+						"source_info": getSourceInfo(c),
 					},
 				})
 
@@ -176,10 +192,14 @@ func (bf *botFilter) Handler() fiber.Handler {
 			cc := bf.countryCode(ip, &logData)
 			if cc == "" {
 				utils.LogInfo(utils.LogEntry{
-					Type: "block_request",
+					Type:      "block_request",
+					IP:        ip,
+					UserAgent: c.Get("User-Agent"),
+					Referer:   c.Get("Referer"),
+					URL:       c.OriginalURL(),
 					Extra: map[string]interface{}{
-						"reason": "geo_unknown",
-						"ip":     ip,
+						"reason":      "geo_unknown",
+						"source_info": getSourceInfo(c),
 					},
 				})
 
@@ -187,11 +207,15 @@ func (bf *botFilter) Handler() fiber.Handler {
 			}
 			if !containsStr(bf.cfg.AllowCountries, cc) {
 				utils.LogInfo(utils.LogEntry{
-					Type: "block_request",
+					Type:      "block_request",
+					IP:        ip,
+					UserAgent: c.Get("User-Agent"),
+					Referer:   c.Get("Referer"),
+					URL:       c.OriginalURL(),
 					Extra: map[string]interface{}{
 						"reason":      "geo_not_allowed",
-						"ip":          ip,
 						"countryCode": cc,
+						"source_info": getSourceInfo(c),
 					},
 				})
 
@@ -202,11 +226,14 @@ func (bf *botFilter) Handler() fiber.Handler {
 		// 6) Mobile only
 		if bf.cfg.AllowMobileOnly && !isMobileUA(ua) {
 			utils.LogInfo(utils.LogEntry{
-				Type: "block_request",
+				Type:      "block_request",
+				IP:        ip,
+				UserAgent: c.Get("User-Agent"),
+				Referer:   c.Get("Referer"),
+				URL:       c.OriginalURL(),
 				Extra: map[string]interface{}{
-					"reason": "non_mobile_device",
-					"ua":     ua,
-					"ip":     ip,
+					"reason":      "non_mobile_device",
+					"source_info": getSourceInfo(c),
 				},
 			})
 
@@ -386,4 +413,51 @@ func isLocalhostIP(ipStr string) bool {
 
 	// Only loopback, not private
 	return ip.IsLoopback()
+}
+
+// getSourceInfo extracts source information from request
+func getSourceInfo(c *fiber.Ctx) map[string]interface{} {
+	sourceInfo := make(map[string]interface{})
+
+	// Referrer information
+	if referer := c.Get("Referer"); referer != "" {
+		if u, err := url.Parse(referer); err == nil {
+			sourceInfo["referer_host"] = u.Host
+			sourceInfo["referer_path"] = u.Path
+			sourceInfo["referer_query"] = u.RawQuery
+		}
+		sourceInfo["referer_full"] = referer
+	} else {
+		sourceInfo["referer_type"] = "direct"
+	}
+
+	// X-Forwarded headers for source tracking
+	if xff := c.Get("X-Forwarded-For"); xff != "" {
+		sourceInfo["x_forwarded_for"] = xff
+	}
+	if xrealip := c.Get("X-Real-IP"); xrealip != "" {
+		sourceInfo["x_real_ip"] = xrealip
+	}
+	if xforwarded := c.Get("X-Forwarded-Proto"); xforwarded != "" {
+		sourceInfo["x_forwarded_proto"] = xforwarded
+	}
+
+	// Query parameters that might indicate traffic source
+	queryParams := make(map[string]string)
+	c.Request().URI().QueryArgs().VisitAll(func(k, v []byte) {
+		key := string(k)
+		// Only log source-related query params to avoid clutter
+		if strings.Contains(strings.ToLower(key), "utm") ||
+			strings.Contains(strings.ToLower(key), "ref") ||
+			strings.Contains(strings.ToLower(key), "source") ||
+			strings.Contains(strings.ToLower(key), "campaign") ||
+			key == "gclid" || key == "fbclid" {
+			queryParams[key] = string(v)
+		}
+	})
+	if len(queryParams) > 0 {
+		sourceInfo["source_params"] = queryParams
+	}
+
+	return sourceInfo
 }

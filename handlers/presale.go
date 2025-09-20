@@ -4,6 +4,7 @@ import (
 	"go-redirect/models"
 	"go-redirect/utils"
 	"math/rand/v2"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -87,6 +88,48 @@ func PreSaleHandler(c *fiber.Ctx) error {
 	// --- Build Extra ---
 	extra := map[string]interface{}{
 		"query_raw": string(c.Request().URI().QueryString()),
+	}
+
+	// Check if direct redirect is requested (preserving headers)
+	if c.Query("redirect") == "direct" {
+		// Build redirect URL with all current query params + product
+		redirectParams := make(map[string]string)
+		for k, v := range queryParams {
+			if k != "redirect" { // Remove redirect param
+				redirectParams[k] = v
+			}
+		}
+		redirectParams["product"] = selected.ID
+		redirectParams["from"] = "presale" // Mark that this came from presale
+
+		// Build query string
+		var params []string
+		for k, v := range redirectParams {
+			params = append(params, k+"="+v)
+		}
+		redirectURL := "/?" + strings.Join(params, "&")
+
+		// Log redirect
+		utils.LogInfo(utils.LogEntry{
+			Type:        "presale_direct_redirect",
+			Timestamp:   time.Now(),
+			ProductName: selected.Name,
+			URL:         c.OriginalURL(),
+			IP:          ip,
+			UserAgent:   c.Get("User-Agent"),
+			Browser:     browser,
+			OS:          osName,
+			Device:      device,
+			Referer:     c.Get("Referer"),
+			QueryParams: queryParams,
+			Headers:     headers,
+			Extra: map[string]interface{}{
+				"redirect_url": redirectURL,
+				"query_raw":    string(c.Request().URI().QueryString()),
+			},
+		})
+
+		return c.Redirect(redirectURL, fiber.StatusFound) // 302 redirect
 	}
 
 	// --- Log Impression ---

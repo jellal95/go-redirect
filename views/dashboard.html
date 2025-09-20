@@ -110,6 +110,84 @@
             margin-bottom: 30px;
         }
         
+        .logs-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .logs-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .logs-filter label {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.9rem;
+        }
+        
+        .logs-filter select, .logs-filter input {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .logs-filter select:focus, .logs-filter input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .pagination-info {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .pagination-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #333;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .pagination-btn:hover:not(:disabled) {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
         .logs-header {
             display: flex;
             justify-content: space-between;
@@ -162,14 +240,148 @@
         .query-params-cell {
             font-family: 'Courier New', monospace;
             font-size: 0.8rem;
-            max-width: 250px;
+            max-width: 300px;
+            position: relative;
+        }
+        
+        .query-params-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .query-params-preview {
+            flex: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
         
-        .query-params-tooltip {
-            cursor: help;
+        .query-params-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .query-params-btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .query-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .query-modal.show {
+            display: flex;
+        }
+        
+        .query-modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 80vw;
+            max-height: 80vh;
+            overflow: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .query-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .query-modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .query-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .query-modal-close:hover {
+            color: #333;
+        }
+        
+        .query-params-list {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .query-param-item {
+            display: flex;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .query-param-key {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 120px;
+            margin-right: 10px;
+        }
+        
+        .query-param-value {
+            word-break: break-all;
+            color: #333;
+        }
+        
+        .traffic-bar {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .traffic-bar-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .source-direct {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+        }
+        
+        .source-google {
+            background: linear-gradient(90deg, #4285f4, #3367d6);
+        }
+        
+        .source-social {
+            background: linear-gradient(90deg, #ff5722, #e64a19);
         }
         
         .status-indicator {
@@ -355,27 +567,118 @@
             </div>
         </div>
         
+        <!-- Traffic Sources Section -->
+        <div class="logs-section">
+            <div class="logs-header">
+                <h3>🌐 All Traffic Sources</h3>
+                <div style="display: flex; gap: 10px;">
+                    <select id="sourcesSort" onchange="updateSourcesTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
+                        <option value="count">Sort by Count</option>
+                        <option value="name">Sort by Name</option>
+                    </select>
+                    <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
+                </div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="logs-table" style="margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">#</th>
+                            <th>Source Domain</th>
+                            <th style="width: 100px;">Count</th>
+                            <th style="width: 120px;">Percentage</th>
+                            <th style="width: 200px;">Traffic Bar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sourcesTableBody">
+                        <tr><td colspan="5">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
         <div class="logs-section">
             <div class="logs-header">
                 <h3>📝 Recent Activity</h3>
                 <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
             </div>
+            
+            <!-- Filters and Controls -->
+            <div class="logs-controls">
+                <div class="logs-filter">
+                    <label>Type:</label>
+                    <select id="typeFilter" onchange="applyFilters()">
+                        <option value="all">All</option>
+                        <option value="redirect">Redirect</option>
+                        <option value="block_request">Blocked</option>
+                        <option value="pre-sale">Pre-sale</option>
+                        <option value="postback">Postback</option>
+                        <option value="server_start">Server</option>
+                    </select>
+                </div>
+                <div class="logs-filter">
+                    <label>Device:</label>
+                    <select id="deviceFilter" onchange="applyFilters()">
+                        <option value="all">All</option>
+                        <option value="Mobile">Mobile</option>
+                        <option value="Desktop">Desktop</option>
+                    </select>
+                </div>
+                <div class="logs-filter">
+                    <label>Search:</label>
+                    <input type="text" id="searchFilter" placeholder="Search..." onkeyup="applyFilters()">
+                </div>
+                <div class="logs-filter">
+                    <label>Per page:</label>
+                    <select id="pageSizeFilter" onchange="applyFilters()">
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="all">All</option>
+                    </select>
+                </div>
+            </div>
+            
             <div style="overflow-x: auto;">
                 <table class="logs-table">
                     <thead>
                         <tr>
-                            <th>Time</th>
-                            <th>Type</th>
-                            <th>Product</th>
-                            <th>Device</th>
+                            <th style="cursor: pointer;" onclick="sortLogs('timestamp')">Time ⚡</th>
+                            <th style="cursor: pointer;" onclick="sortLogs('type')">Type ⚡</th>
+                            <th style="cursor: pointer;" onclick="sortLogs('product_name')">Product ⚡</th>
+                            <th style="cursor: pointer;" onclick="sortLogs('device')">Device ⚡</th>
                             <th>Source</th>
                             <th>Query Parameters</th>
                         </tr>
                     </thead>
                     <tbody id="logsTableBody">
-                        <tr><td colspan="5">Loading...</td></tr>
+                        <tr><td colspan="6">Loading...</td></tr>
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination">
+                <div class="pagination-info" id="paginationInfo">
+                    Showing 0-0 of 0 entries
+                </div>
+                <div class="pagination-controls" id="paginationControls">
+                    <!-- Pagination buttons will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Query Parameters Modal -->
+    <div id="queryModal" class="query-modal">
+        <div class="query-modal-content">
+            <div class="query-modal-header">
+                <h3 class="query-modal-title">Query Parameters</h3>
+                <button class="query-modal-close" onclick="closeQueryModal()">&times;</button>
+            </div>
+            <div id="queryModalBody" class="query-params-list">
+                <!-- Parameters will be populated here -->
             </div>
         </div>
     </div>
@@ -541,6 +844,9 @@
             // Update charts
             updateCharts(data);
             
+            // Update sources table
+            updateSourcesTable(data.referer_domains);
+            
             // Update logs table
             updateLogsTable(data.logs);
             
@@ -582,31 +888,278 @@
             sourcesChart.update();
         }
         
-        // Update logs table
+        // Update logs table dengan filtering dan pagination
         function updateLogsTable(logs) {
-            const tbody = document.getElementById('logsTableBody');
-            const recentLogs = logs.slice(-20).reverse(); // Show last 20 logs
+            allLogsData = logs.reverse(); // Store all data, most recent first
+            applyFilters();
+        }
+        
+        // Apply filters to logs data
+        function applyFilters() {
+            const typeFilter = document.getElementById('typeFilter').value;
+            const deviceFilter = document.getElementById('deviceFilter').value;
+            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+            const pageSizeFilter = document.getElementById('pageSizeFilter').value;
             
-            tbody.innerHTML = recentLogs.map(log => {
+            // Update page size
+            pageSize = pageSizeFilter === 'all' ? allLogsData.length : parseInt(pageSizeFilter);
+            
+            // Filter data
+            filteredLogsData = allLogsData.filter(log => {
+                // Type filter
+                if (typeFilter !== 'all' && log.type !== typeFilter) {
+                    return false;
+                }
+                
+                // Device filter
+                if (deviceFilter !== 'all' && log.device !== deviceFilter) {
+                    return false;
+                }
+                
+                // Search filter
+                if (searchFilter) {
+                    const searchableText = [
+                        log.product_name,
+                        log.ip,
+                        log.referer,
+                        log.user_agent,
+                        JSON.stringify(log.query_params)
+                    ].join(' ').toLowerCase();
+                    
+                    if (!searchableText.includes(searchFilter)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            // Sort data
+            sortLogsData();
+            
+            // Reset to first page
+            currentPage = 1;
+            
+            // Render table
+            renderLogsTable();
+            renderPagination();
+        }
+        
+        // Sort logs data
+        function sortLogsData() {
+            filteredLogsData.sort((a, b) => {
+                let aVal = a[sortField];
+                let bVal = b[sortField];
+                
+                // Handle different data types
+                if (sortField === 'timestamp') {
+                    aVal = new Date(aVal);
+                    bVal = new Date(bVal);
+                } else if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = (bVal || '').toLowerCase();
+                }
+                
+                if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+                if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+        
+        // Sort logs by field
+        function sortLogs(field) {
+            if (sortField === field) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortField = field;
+                sortDirection = 'desc';
+            }
+            
+            sortLogsData();
+            renderLogsTable();
+        }
+        
+        // Render logs table
+        function renderLogsTable() {
+            const tbody = document.getElementById('logsTableBody');
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = pageSize === filteredLogsData.length ? filteredLogsData.length : startIndex + pageSize;
+            const pageData = filteredLogsData.slice(startIndex, endIndex);
+            
+            currentLogsData = pageData; // Store for modal access
+            
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No data found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = pageData.map((log, index) => {
                 // Format query parameters for display
                 let queryParamsDisplay = '-';
                 if (log.query_params && Object.keys(log.query_params).length > 0) {
-                    const params = Object.entries(log.query_params)
-                        .slice(0, 3) // Show only first 3 params to avoid clutter
-                        .map(([key, value]) => `${key}=${value.substring(0, 10)}${value.length > 10 ? '...' : ''}`)
-                        .join(', ');
-                    const remaining = Object.keys(log.query_params).length - 3;
-                    queryParamsDisplay = `<span title="${JSON.stringify(log.query_params, null, 2)}" class="query-params-tooltip">${params}${remaining > 0 ? ` (+${remaining} more)` : ''}</span>`;
+                    const allParams = Object.entries(log.query_params);
+                    const paramString = allParams
+                        .map(([key, value]) => `${key}=${value}`)
+                        .join('&');
+                    
+                    // Create preview (first 30 chars)
+                    const preview = paramString.length > 30 
+                        ? paramString.substring(0, 30) + '...' 
+                        : paramString;
+                    
+                    queryParamsDisplay = `
+                        <div class="query-params-content">
+                            <span class="query-params-preview" title="${paramString.replace(/"/g, '&quot;')}">
+                                ${preview}
+                            </span>
+                            <button class="query-params-btn" onclick="showQueryModal(${index})">
+                                View
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                // Format source
+                let source = '-';
+                if (log.referer) {
+                    try {
+                        source = new URL(log.referer).hostname;
+                    } catch (e) {
+                        source = log.referer.length > 20 ? log.referer.substring(0, 20) + '...' : log.referer;
+                    }
                 }
                 
                 return `
                     <tr>
-                        <td>${new Date(log.timestamp).toLocaleTimeString()}</td>
+                        <td>${new Date(log.timestamp).toLocaleString()}</td>
                         <td><span style="background: ${getTypeColor(log.type)}; padding: 3px 8px; border-radius: 12px; color: white; font-size: 0.8rem;">${log.type}</span></td>
                         <td>${log.product_name || '-'}</td>
                         <td>${log.device || '-'}</td>
-                        <td>${log.referer ? new URL(log.referer).hostname : '-'}</td>
+                        <td title="${log.referer || ''}">${source}</td>
                         <td class="query-params-cell">${queryParamsDisplay}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Render pagination controls
+        function renderPagination() {
+            const totalItems = filteredLogsData.length;
+            const totalPages = Math.ceil(totalItems / pageSize);
+            const startItem = Math.min(((currentPage - 1) * pageSize) + 1, totalItems);
+            const endItem = Math.min(currentPage * pageSize, totalItems);
+            
+            // Update info
+            document.getElementById('paginationInfo').textContent = 
+                `Showing ${startItem}-${endItem} of ${totalItems} entries`;
+            
+            // Generate pagination controls
+            const controls = document.getElementById('paginationControls');
+            let buttonsHtml = '';
+            
+            // Previous button
+            buttonsHtml += `<button class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">&laquo;</button>`;
+            
+            // Page numbers
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                buttonsHtml += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            }
+            
+            // Next button
+            buttonsHtml += `<button class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">&raquo;</button>`;
+            
+            controls.innerHTML = buttonsHtml;
+        }
+        
+        // Change page
+        function changePage(page) {
+            if (page < 1 || page > Math.ceil(filteredLogsData.length / pageSize)) return;
+            currentPage = page;
+            renderLogsTable();
+            renderPagination();
+        }
+        
+        // Update sources table
+        function updateSourcesTable(refererDomains) {
+            if (!refererDomains) refererDomains = sourcesData;
+            sourcesData = refererDomains;
+            
+            const tbody = document.getElementById('sourcesTableBody');
+            const sortBy = document.getElementById('sourcesSort')?.value || 'count';
+            
+            // Convert to array and add "Direct" traffic
+            let sources = Object.entries(refererDomains || {});
+            
+            // Add direct traffic (empty referer)
+            const directCount = allLogsData.filter(log => !log.referer || log.referer === '').length;
+            if (directCount > 0) {
+                sources.push(['Direct Traffic', directCount]);
+            }
+            
+            if (sources.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No traffic sources data</td></tr>';
+                return;
+            }
+            
+            // Sort sources
+            sources.sort((a, b) => {
+                if (sortBy === 'name') {
+                    return a[0].localeCompare(b[0]);
+                } else {
+                    return b[1] - a[1]; // Sort by count desc
+                }
+            });
+            
+            // Calculate total for percentages
+            const total = sources.reduce((sum, [, count]) => sum + count, 0);
+            const maxCount = Math.max(...sources.map(([, count]) => count));
+            
+            // Generate table rows
+            tbody.innerHTML = sources.map(([domain, count], index) => {
+                const percentage = ((count / total) * 100).toFixed(1);
+                const barWidth = (count / maxCount) * 100;
+                
+                // Determine source type for styling
+                let sourceClass = '';
+                let sourceIcon = '🌐';
+                
+                if (domain === 'Direct Traffic') {
+                    sourceClass = 'source-direct';
+                    sourceIcon = '🔗';
+                } else if (domain.includes('google')) {
+                    sourceClass = 'source-google';
+                    sourceIcon = '🔍';
+                } else if (domain.includes('facebook') || domain.includes('twitter') || domain.includes('instagram')) {
+                    sourceClass = 'source-social';
+                    sourceIcon = '📱';
+                }
+                
+                return `
+                    <tr>
+                        <td><strong>${index + 1}</strong></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span>${sourceIcon}</span>
+                                <span title="${domain}">${domain}</span>
+                            </div>
+                        </td>
+                        <td><strong>${count.toLocaleString()}</strong></td>
+                        <td>${percentage}%</td>
+                        <td>
+                            <div class="traffic-bar">
+                                <div class="traffic-bar-fill ${sourceClass}" style="width: ${barWidth}%">
+                                    ${barWidth > 20 ? percentage + '%' : ''}
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 `;
             }).join('');
@@ -680,6 +1233,55 @@
                 console.error('Error loading bot filter status:', error);
             }
         }
+        
+        // Enhanced logs management
+        let allLogsData = [];
+        let filteredLogsData = [];
+        let currentLogsData = [];
+        let currentPage = 1;
+        let pageSize = 20;
+        let sortField = 'timestamp';
+        let sortDirection = 'desc';
+        let sourcesData = {};
+        
+        function showQueryModal(logIndex) {
+            const log = currentLogsData[currentLogsData.length - 1 - logIndex]; // Reverse index
+            if (!log || !log.query_params) return;
+            
+            const modal = document.getElementById('queryModal');
+            const modalBody = document.getElementById('queryModalBody');
+            
+            // Build parameters list
+            const paramsHtml = Object.entries(log.query_params)
+                .map(([key, value]) => `
+                    <div class="query-param-item">
+                        <div class="query-param-key">${key}:</div>
+                        <div class="query-param-value">${value}</div>
+                    </div>
+                `).join('');
+            
+            modalBody.innerHTML = paramsHtml || '<p>No parameters found</p>';
+            modal.classList.add('show');
+        }
+        
+        function closeQueryModal() {
+            const modal = document.getElementById('queryModal');
+            modal.classList.remove('show');
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('queryModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeQueryModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeQueryModal();
+            }
+        });
         
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {

@@ -35,7 +35,11 @@ type LogsResponse struct {
 }
 
 func LogsHandler(c *fiber.Ctx) error {
-	folder := "logs"
+	// Use /logs for production (Fly.io volume), ./logs for development
+	folder := os.Getenv("LOG_PATH")
+	if folder == "" {
+		folder = "logs" // default for development
+	}
 	files, err := filepath.Glob(fmt.Sprintf("%s/log-*.jsonl", folder))
 	if err != nil || len(files) == 0 {
 		return c.Status(404).JSON(fiber.Map{"error": "no log files found"})

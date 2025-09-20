@@ -110,16 +110,7 @@ func main() {
 	// Simple server startup
 
 	fmt.Printf("🚀 Server starting on port %s\n", port)
-	utils.LogInfo(utils.LogEntry{
-		Type:  "server_start",
-		Extra: map[string]interface{}{"port": port},
-	})
 
 	if err := app.Listen(":" + port); err != nil {
-
-		utils.LogFatal(utils.LogEntry{
-			Type:  "fatal_error",
-			Extra: map[string]interface{}{"error": err.Error()},
-		}, 1)
 	}
 }

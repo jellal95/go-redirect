@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/mssola/user_agent"
 	"github.com/oschwald/geoip2-golang"
 )
 
@@ -404,6 +405,34 @@ func buildBlockRequestLog(c *fiber.Ctx, ip, reason string, extra map[string]inte
 		queryParams[string(k)] = string(v)
 	})
 
+	// Extract meaningful information from query parameters
+	productName := ""
+	if productID := queryParams["product"]; productID != "" {
+		// Try to find product name from CSV
+		if csvProducts, err := utils.LoadProductsCSV("config/config.csv"); err == nil {
+			for _, p := range csvProducts {
+				if p.ID == productID {
+					productName = p.Name
+					break
+				}
+			}
+		}
+		// If not found, use product ID as name
+		if productName == "" {
+			productName = "Product: " + productID
+		}
+	}
+
+	// Extract device info from User-Agent
+	device := "Desktop"
+	if userAgent := c.Get("User-Agent"); userAgent != "" {
+		// Import user_agent package at the top of file
+		ua := user_agent.New(userAgent)
+		if ua.Mobile() {
+			device = "Mobile"
+		}
+	}
+
 	// Build headers map (selective - avoid sensitive headers)
 	headers := make(map[string]string)
 	importantHeaders := []string{"User-Agent", "Referer", "Accept", "Accept-Language", "Accept-Encoding"}
@@ -430,10 +459,18 @@ func buildBlockRequestLog(c *fiber.Ctx, ip, reason string, extra map[string]inte
 		extra[k] = v
 	}
 
+	// Add block reason and type_ads to extra
+	extra["block_reason"] = reason
+	if typeAds := queryParams["type_ads"]; typeAds != "" {
+		extra["type_ads"] = typeAds
+	}
+
 	return utils.LogEntry{
 		Type:        "block_request",
 		IP:          ip,
+		ProductName: productName,
 		UserAgent:   c.Get("User-Agent"),
+		Device:      device,
 		Referer:     c.Get("Referer"),
 		URL:         c.OriginalURL(),
 		QueryParams: queryParams,

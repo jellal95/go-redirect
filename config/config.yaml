@@ -38,7 +38,13 @@ bot_filter:
     - "212.93."  # IPXO / EU-RU datacenter
     - "104.28."  # Cloudflare proxy/bot
     - "13.217."  # AWS Singapore
-    - "103.111." # Local DC Jakarta
+    - "103.111." # Local DC Jakarta (already detected bot traffic)
+    - "172.16."  # Private IP bot traffic (suspicious)
+    # === SUSPICIOUS IP RANGES FROM LOG ANALYSIS ===
+    - "38.226."  # Multiple bot requests detected
+    - "160.22."  # Suspicious bot patterns
+    - "160.19."  # Same network as above
+    - "156.140." # US datacenter bot traffic
   blacklist_referrer:
     - "deliv12.com"
     - "torzor.com"
@@ -49,13 +55,42 @@ bot_filter:
     - "popcash.net"
     - "sahorjj.com"
     - "viowrel.com"
+    - "piladss.com"
+    - "bmmads.com"
+    - "addclickad.com"
+    - "adclickad.com" 
+    - "kts.vasstycom.com"
+    - "vasstycom.com"
+    # === FILTER/REDIRECT DOMAINS (High Bot Traffic) ===
+    - "filter.advlistings.com"      # Bot traffic redirect
+    - "xml.ppcxchange.com"          # PPC exchange bot traffic
+    - "xml.popadplus.com"           # Popup redirect bot traffic
+    - "filter.adjux.com"            # Filter redirect bot
+    - "filter.insightadz.com"       # Another filter redirect
+    - "427270.popcash.net"          # PopCash redirect bot
+    # === ADULT/SPAM DOMAINS (High Bot Traffic) === 
+    - "1000fapvids.com"             # Adult domain bot traffic
+    - "p.plowh.com"                 # Already exists above but keeping for clarity
+    # === SUSPICIOUS/FAKE DOMAINS ===
+    - "guisser-site2.blogspot.com"  # Fake blogspot redirect
+    - "enrtx.com"                   # Unknown suspicious domain
   blacklist_ref_regex:
     - "^p\\.[a-z0-9\\-]+\\.com$"
+    - ".*ads.*\\.com$"           # Domains with 'ads' in name
+    - ".*click.*\\.com$"         # Domains with 'click' in name  
+    - ".*bot.*\\.com$"           # Domains with 'bot' in name
+    - "kts\\.[a-z]+\\.com$"       # KTS subdomain pattern
+    - "^[a-z]{2,8}ads\\.[a-z]+$"  # Short + ads pattern
+    - "^filter\\..*\\.com$"       # Filter.* subdomain pattern (filter.anything.com)
+    - "^xml\\..*\\.com$"          # XML.* subdomain pattern (xml.anything.com) 
+    - ".*fapvids.*\\.com$"        # Adult site pattern
+    - ".*popcash.*\\.net$"        # PopCash network pattern
+    - "[0-9]+\\.popcash\\.net$"   # Numeric PopCash pattern
 
 products:
   - name: "Shopee Direct - Anwar"
     url: "https://s.shopee.co.id/5VLlFD7dZe?sub_id={click_id}--{campaign_id}--{spot_id}--{type_ads}--{domain}"
-    percentage: 25
+    percentage: 30
   - name: "Shopee Direct - Rima"
     url: "https://s.shopee.co.id/40X6O25UZO?sub_id={click_id}--{campaign_id}--{spot_id}--{type_ads}--{domain}"
     percentage: 25

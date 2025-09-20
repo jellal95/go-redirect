@@ -171,8 +171,8 @@ func (bf *botFilter) Handler() fiber.Handler {
 			}
 		}
 
-		// 5) Geo filter (skip for localhost and private IPs)
-		if len(bf.cfg.AllowCountries) > 0 && bf.geoDB != nil && !isLocalOrPrivateIP(ip) {
+		// 5) Geo filter (skip only for localhost, not all private IPs)
+		if len(bf.cfg.AllowCountries) > 0 && bf.geoDB != nil && !isLocalhostIP(ip) {
 			cc := bf.countryCode(ip, &logData)
 			if cc == "" {
 				utils.LogInfo(utils.LogEntry{
@@ -370,4 +370,20 @@ func isLocalOrPrivateIP(ipStr string) bool {
 
 	// Private IP ranges
 	return ip.IsLoopback() || ip.IsPrivate()
+}
+
+// isLocalhostIP checks if IP is only localhost (for geo filter bypass)
+func isLocalhostIP(ipStr string) bool {
+	// Only localhost and loopback
+	if ipStr == "127.0.0.1" || ipStr == "::1" || ipStr == "localhost" {
+		return true
+	}
+
+	ip := net.ParseIP(ipStr)
+	if ip == nil {
+		return false
+	}
+
+	// Only loopback, not private
+	return ip.IsLoopback()
 }

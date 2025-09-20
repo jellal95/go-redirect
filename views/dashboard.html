@@ -159,6 +159,19 @@
             background: #f8f9fa;
         }
         
+        .query-params-cell {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .query-params-tooltip {
+            cursor: help;
+        }
+        
         .status-indicator {
             display: inline-block;
             width: 10px;
@@ -356,6 +369,7 @@
                             <th>Product</th>
                             <th>Device</th>
                             <th>Source</th>
+                            <th>Query Parameters</th>
                         </tr>
                     </thead>
                     <tbody id="logsTableBody">
@@ -573,15 +587,29 @@
             const tbody = document.getElementById('logsTableBody');
             const recentLogs = logs.slice(-20).reverse(); // Show last 20 logs
             
-            tbody.innerHTML = recentLogs.map(log => `
-                <tr>
-                    <td>${new Date(log.timestamp).toLocaleTimeString()}</td>
-                    <td><span style="background: ${getTypeColor(log.type)}; padding: 3px 8px; border-radius: 12px; color: white; font-size: 0.8rem;">${log.type}</span></td>
-                    <td>${log.product_name || '-'}</td>
-                    <td>${log.device || '-'}</td>
-                    <td>${log.referer ? new URL(log.referer).hostname : '-'}</td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = recentLogs.map(log => {
+                // Format query parameters for display
+                let queryParamsDisplay = '-';
+                if (log.query_params && Object.keys(log.query_params).length > 0) {
+                    const params = Object.entries(log.query_params)
+                        .slice(0, 3) // Show only first 3 params to avoid clutter
+                        .map(([key, value]) => `${key}=${value.substring(0, 10)}${value.length > 10 ? '...' : ''}`)
+                        .join(', ');
+                    const remaining = Object.keys(log.query_params).length - 3;
+                    queryParamsDisplay = `<span title="${JSON.stringify(log.query_params, null, 2)}" class="query-params-tooltip">${params}${remaining > 0 ? ` (+${remaining} more)` : ''}</span>`;
+                }
+                
+                return `
+                    <tr>
+                        <td>${new Date(log.timestamp).toLocaleTimeString()}</td>
+                        <td><span style="background: ${getTypeColor(log.type)}; padding: 3px 8px; border-radius: 12px; color: white; font-size: 0.8rem;">${log.type}</span></td>
+                        <td>${log.product_name || '-'}</td>
+                        <td>${log.device || '-'}</td>
+                        <td>${log.referer ? new URL(log.referer).hostname : '-'}</td>
+                        <td class="query-params-cell">${queryParamsDisplay}</td>
+                    </tr>
+                `;
+            }).join('');
         }
         
         // Get color for log type

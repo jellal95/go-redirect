@@ -44,7 +44,7 @@
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -316,6 +316,11 @@
                 <div class="stat-value" id="topBrowser">-</div>
                 <div class="stat-subtitle" id="browserCount">-</div>
             </div>
+            <div class="stat-card">
+                <h3>Top OS</h3>
+                <div class="stat-value" id="topOS">-</div>
+                <div class="stat-subtitle" id="osCount">-</div>
+            </div>
         </div>
         
         <div class="charts-grid">
@@ -383,7 +388,7 @@
                     labels: [],
                     datasets: [{
                         data: [],
-                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#43e97b']
+                        backgroundColor: [] // Will be set dynamically to match log type colors
                     }]
                 },
                 options: chartOptions
@@ -488,11 +493,35 @@
             document.getElementById('mobileTraffic').textContent = mobile.toLocaleString();
             document.getElementById('mobileRate').textContent = `${((mobile / (mobile + desktop)) * 100).toFixed(1)}% mobile`;
             
-            // Top browser
-            const browsers = Object.entries(data.browser_summary).sort((a, b) => b[1] - a[1]);
+            // Top browser (filter out OS names, prefer actual browsers)
+            const osNames = ['Android', 'iOS', 'Windows', 'Linux', 'Mac', 'iPhone', 'iPad', 'iPod', 'Windows Phone', 'BlackBerry', 'Symbian'];
+            const browsers = Object.entries(data.browser_summary)
+                .filter(([name]) => !osNames.includes(name))
+                .sort((a, b) => b[1] - a[1]);
+            
             if (browsers.length > 0) {
                 document.getElementById('topBrowser').textContent = browsers[0][0];
                 document.getElementById('browserCount').textContent = `${browsers[0][1].toLocaleString()} users`;
+            } else {
+                // Fallback to top entry if no browsers found
+                const allEntries = Object.entries(data.browser_summary).sort((a, b) => b[1] - a[1]);
+                if (allEntries.length > 0) {
+                    document.getElementById('topBrowser').textContent = allEntries[0][0];
+                    document.getElementById('browserCount').textContent = `${allEntries[0][1].toLocaleString()} users`;
+                }
+            }
+            
+            // Top OS (prefer OS names over browsers)
+            const osEntries = Object.entries(data.browser_summary)
+                .filter(([name]) => osNames.includes(name))
+                .sort((a, b) => b[1] - a[1]);
+            
+            if (osEntries.length > 0) {
+                document.getElementById('topOS').textContent = osEntries[0][0];
+                document.getElementById('osCount').textContent = `${osEntries[0][1].toLocaleString()} devices`;
+            } else {
+                document.getElementById('topOS').textContent = 'Unknown';
+                document.getElementById('osCount').textContent = '0 devices';
             }
             
             // Update charts
@@ -507,11 +536,14 @@
         
         // Update all charts
         function updateCharts(data) {
-            // Traffic distribution
+            // Traffic distribution with matching colors
             const trafficLabels = Object.keys(data.type_summary);
             const trafficData = Object.values(data.type_summary);
+            const trafficColors = trafficLabels.map(label => getTypeColor(label));
+            
             trafficChart.data.labels = trafficLabels;
             trafficChart.data.datasets[0].data = trafficData;
+            trafficChart.data.datasets[0].backgroundColor = trafficColors;
             trafficChart.update();
             
             // Top products (top 5)

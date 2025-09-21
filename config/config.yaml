@@ -36,16 +36,15 @@ bot_filter:
   blacklist_referrer:
     - "744745.popcash.net"
     - "o3sxhw5ad.com"
-    - "adclickad.com"
-    - "clladss.com"
     - "1494502.com"
     - "linggar.store"
+    - "1503351.com"
+    - "kts.vasstycom.com"
+    - "95617713516476.com"
 
   blacklist_ref_regex:
     - ".*popcash\\.net.*"
     - ".*o3sxhw5ad\\.com.*"
-    - ".*adclickad\\.com.*"
-    - ".*clladss\\.com.*"
     - ".*1494502\\.com.*"
     - ".*linggar\\.store.*"
 

@@ -101,11 +101,13 @@ Write-Host "Found machine: $machineId" -ForegroundColor Yellow
 
 # List log files on remote server
 Write-Host "Listing log files on remote server..." -ForegroundColor Yellow
+Write-Host "   (Note: SSH connection warnings like 'handle is invalid' are normal and don't affect functionality)" -ForegroundColor Gray
 # First try /logs path (production), then /app/logs (fallback)
-$logFilesList = flyctl ssh console --machine $machineId -C "find /logs -name '*.jsonl' -type f"
+# Suppress SSH connection errors that don't affect functionality
+$logFilesList = flyctl ssh console --machine $machineId -C "find /logs -name '*.jsonl' -type f" 2>$null
 if ([string]::IsNullOrWhiteSpace($logFilesList) -or $logFilesList -match "No such file") {
     Write-Host "   Trying /app/logs path..." -ForegroundColor Gray
-    $logFilesList = flyctl ssh console --machine $machineId -C "find /app/logs -name '*.jsonl' -type f"
+    $logFilesList = flyctl ssh console --machine $machineId -C "find /app/logs -name '*.jsonl' -type f" 2>$null
 }
 
 if ([string]::IsNullOrWhiteSpace($logFilesList) -or $logFilesList -match "No such file") {

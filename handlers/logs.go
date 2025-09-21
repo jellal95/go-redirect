@@ -30,6 +30,13 @@ type LogsResponse struct {
 	CitySummary    map[string]int `json:"city_summary"`    // City analytics
 	RegionSummary  map[string]int `json:"region_summary"`  // Region analytics
 	ProductSummary map[string]int `json:"product_summary"` // Essential: business metrics
+	// === TRAFFIC SEGMENTATION ===
+	DirectRedirects  int `json:"direct_redirects"`  // Redirects directly to / (not from pre-sale)
+	PresaleRedirects int `json:"presale_redirects"` // Redirects from /pre-sale to /
+	// === FLOW ANALYTICS ===
+	FlowSummary map[string]int `json:"flow_summary"` // Pre-sale vs Direct flow tracking
+	// === TIME ANALYTICS ===
+	HourSummary map[string]int `json:"hour_summary"` // Peak hours analytics
 
 	// === RAW LOGS (shown last) ===
 	Logs []utils.LogEntry `json:"logs"`
@@ -60,6 +67,10 @@ func LogsHandler(c *fiber.Ctx) error {
 		GeoSummary:        make(map[string]int),
 		CitySummary:       make(map[string]int),
 		RegionSummary:     make(map[string]int),
+		DirectRedirects:   0,
+		PresaleRedirects:  0,
+		FlowSummary:       make(map[string]int),
+		HourSummary:       make(map[string]int),
 		Logs:              []utils.LogEntry{},
 	}
 
@@ -109,6 +120,29 @@ func LogsHandler(c *fiber.Ctx) error {
 				}
 			}
 
+			// Track hour for redirect traffic only (for peak hours analysis)
+			if entry.Type == "redirect" {
+				hour := fmt.Sprintf("%02d:00", entry.Timestamp.Hour())
+				resp.HourSummary[hour]++
+			}
+
+			// Track detailed flow patterns for redirect traffic
+			if entry.Type == "redirect" {
+				// Check if this redirect came from pre-sale page by:
+				// 1. 'from=presale' query parameter (direct redirect)
+				// 2. Referer containing '/pre-sale' (button click from pre-sale page)
+				fromParam, hasFromParam := entry.QueryParams["from"]
+				hasPresaleReferer := strings.Contains(entry.Referer, "/pre-sale")
+
+				if (hasFromParam && fromParam == "presale") || hasPresaleReferer {
+					resp.PresaleRedirects++
+					resp.FlowSummary["Pre-sale Flow"]++
+				} else {
+					resp.DirectRedirects++
+					resp.FlowSummary["Direct Flow"]++
+				}
+			}
+
 			// Track additional data for valid traffic only
 			if isValidTraffic && entry.Extra != nil {
 				if typeAds, ok := entry.Extra["type_ads"].(string); ok && typeAds != "" {
@@ -153,6 +187,8 @@ func LogsHandler(c *fiber.Ctx) error {
 	sortMapKeys(resp.GeoSummary)
 	sortMapKeys(resp.CitySummary)
 	sortMapKeys(resp.RegionSummary)
+	sortMapKeys(resp.FlowSummary)
+	sortMapKeys(resp.HourSummary)
 
 	return c.JSON(resp)
 }

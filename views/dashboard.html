@@ -511,40 +511,65 @@
         </div>
         
         <div class="stats-grid">
+            <!-- 1. Total All Traffic (/ + /pre-sale) -->
             <div class="stat-card">
-                <h3>Total Traffic</h3>
-                <div class="stat-value" id="totalLogs">-</div>
-                <div class="stat-subtitle">All time requests</div>
+                <h3>📊 Total All Traffic</h3>
+                <div class="stat-value" id="totalAllTraffic">-</div>
+                <div class="stat-subtitle">Combined endpoint traffic</div>
             </div>
+            <!-- 2. Block Traffic -->
             <div class="stat-card">
-                <h3>Successful Redirects</h3>
-                <div class="stat-value" id="successfulRedirects">-</div>
-                <div class="stat-subtitle" id="successRate">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Pre-sale Traffic</h3>
-                <div class="stat-value" id="presaleTraffic">-</div>
-                <div class="stat-subtitle" id="presaleRate">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Bot Blocks</h3>
-                <div class="stat-value" id="blockedRequests">-</div>
+                <h3>🚫 Block Traffic</h3>
+                <div class="stat-value" id="blockTraffic">-</div>
                 <div class="stat-subtitle" id="blockRate">-</div>
             </div>
+            <!-- 3. Direct Redirect Traffic (/ only, not from /pre-sale) -->
             <div class="stat-card">
-                <h3>Mobile Traffic</h3>
-                <div class="stat-value" id="mobileTraffic">-</div>
-                <div class="stat-subtitle" id="mobileRate">-</div>
+                <h3>🎯 Direct Redirect</h3>
+                <div class="stat-value" id="directRedirect">-</div>
+                <div class="stat-subtitle">Direct conversion traffic</div>
             </div>
+            <!-- 4. Pre-sale Traffic (/pre-sale) -->
             <div class="stat-card">
-                <h3>Top Browser</h3>
+                <h3>🛒 Pre-sale Traffic</h3>
+                <div class="stat-value" id="presaleTraffic">-</div>
+                <div class="stat-subtitle">Landing page impressions</div>
+            </div>
+            <!-- 5. Successfully Redirect from Pre-sale -->
+            <div class="stat-card">
+                <h3>✅ Pre-sale Convert</h3>
+                <div class="stat-value" id="presaleRedirect">-</div>
+                <div class="stat-subtitle">Landing page conversions</div>
+            </div>
+            <!-- 6. Top Browser -->
+            <div class="stat-card">
+                <h3>🌐 Top Browser</h3>
                 <div class="stat-value" id="topBrowser">-</div>
                 <div class="stat-subtitle" id="browserCount">-</div>
             </div>
+            <!-- 7. Top OS -->
             <div class="stat-card">
-                <h3>Top OS</h3>
+                <h3>💻 Top OS</h3>
                 <div class="stat-value" id="topOS">-</div>
                 <div class="stat-subtitle" id="osCount">-</div>
+            </div>
+            <!-- 8. Top City -->
+            <div class="stat-card">
+                <h3>🏙️ Top City</h3>
+                <div class="stat-value" id="topCity">-</div>
+                <div class="stat-subtitle" id="cityCount">-</div>
+            </div>
+            <!-- 9. Peak Hours -->
+            <div class="stat-card">
+                <h3>⏰ Peak Hours</h3>
+                <div class="stat-value" id="peakHour">-</div>
+                <div class="stat-subtitle" id="peakHourCount">-</div>
+            </div>
+            <!-- 10. Flow Ratio -->
+            <div class="stat-card">
+                <h3>📊 Flow Ratio</h3>
+                <div class="stat-value" id="flowRatio">-</div>
+                <div class="stat-subtitle" id="flowDetails">Conversion flow distribution</div>
             </div>
         </div>
         
@@ -563,101 +588,103 @@
             </div>
         </div>
         
-        <!-- Blocked Traffic Sources Section -->
-        <div class="logs-section">
-            <div class="logs-header">
-                <h3>🚫 Blocked Traffic Sources</h3>
-                <div style="display: flex; gap: 10px;">
-                    <select id="blockedSort" onchange="updateBlockedTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
-                        <option value="count">Sort by Count</option>
-                        <option value="name">Sort by Name</option>
-                    </select>
-                    <select id="blockedPageSize" onchange="currentBlockedPage = 1; updateBlockedTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
-                        <option value="10" selected>10 per page</option>
-                        <option value="25">25 per page</option>
-                        <option value="50">50 per page</option>
-                        <option value="all">Show All</option>
-                    </select>
-                    <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
+        <!-- 50-50 Layout for Traffic Sources Tables -->
+        <div class="charts-grid" style="gap: 20px;">
+            <!-- Blocked Traffic Sources (Left 50%) -->
+            <div class="logs-section" style="margin-bottom: 0;">
+                <div class="logs-header">
+                    <h3>🚫 Blocked Traffic Sources</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="blockedSort" onchange="updateBlockedTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd; font-size: 0.9rem;">
+                            <option value="count">Sort by Count</option>
+                            <option value="name">Sort by Name</option>
+                        </select>
+                        <select id="blockedPageSize" onchange="currentBlockedPage = 1; updateBlockedTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd; font-size: 0.9rem;">
+                            <option value="5" selected>5 per page</option>
+                            <option value="10">10 per page</option>
+                            <option value="all">Show All</option>
+                        </select>
+                        <button class="refresh-btn" onclick="refreshData()" style="font-size: 0.8rem; padding: 4px 8px;">🔄</button>
+                    </div>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="logs-table" style="margin-bottom: 0; font-size: 0.9rem;">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">#</th>
+                                <th>Blocked Source</th>
+                                <th style="width: 80px;">Count</th>
+                                <th style="width: 80px;">%</th>
+                                <th style="width: 120px;">Block Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody id="blockedTableBody">
+                            <tr><td colspan="5">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Blocked Pagination -->
+                <div class="pagination" style="margin-top: 10px;">
+                    <div class="pagination-info" id="blockedPaginationInfo" style="font-size: 0.85rem;">
+                        Showing 0-0 of 0 blocked sources
+                    </div>
+                    <div class="pagination-controls" id="blockedPaginationControls">
+                        <!-- Pagination buttons will be generated here -->
+                    </div>
                 </div>
             </div>
             
-            <div style="overflow-x: auto;">
-                <table class="logs-table" style="margin-bottom: 0;">
-                    <thead>
-                        <tr>
-                            <th style="width: 60px;">#</th>
-                            <th>Blocked Source</th>
-                            <th style="width: 100px;">Count</th>
-                            <th style="width: 120px;">Percentage</th>
-                            <th style="width: 200px;">Block Rate</th>
-                        </tr>
-                    </thead>
-                    <tbody id="blockedTableBody">
-                        <tr><td colspan="5">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Blocked Pagination -->
-            <div class="pagination">
-                <div class="pagination-info" id="blockedPaginationInfo">
-                    Showing 0-0 of 0 blocked sources
+            <!-- Success Traffic Sources (Right 50%) -->
+            <div class="logs-section" style="margin-bottom: 0;">
+                <div class="logs-header">
+                    <h3>✅ Success Traffic Sources</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="sourcesSort" onchange="updateSourcesTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd; font-size: 0.9rem;">
+                            <option value="count">Sort by Count</option>
+                            <option value="name">Sort by Name</option>
+                        </select>
+                        <select id="sourcesPageSize" onchange="currentSourcesPage = 1; updateSourcesTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd; font-size: 0.9rem;">
+                            <option value="5" selected>5 per page</option>
+                            <option value="10">10 per page</option>
+                            <option value="all">Show All</option>
+                        </select>
+                        <button class="refresh-btn" onclick="refreshData()" style="font-size: 0.8rem; padding: 4px 8px;">🔄</button>
+                    </div>
                 </div>
-                <div class="pagination-controls" id="blockedPaginationControls">
-                    <!-- Pagination buttons will be generated here -->
+                
+                <div style="overflow-x: auto;">
+                    <table class="logs-table" style="margin-bottom: 0; font-size: 0.9rem;">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">#</th>
+                                <th>Source</th>
+                                <th style="width: 80px;">Count</th>
+                                <th style="width: 80px;">%</th>
+                                <th style="width: 120px;">Success Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sourcesTableBody">
+                            <tr><td colspan="5">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Sources Pagination -->
+                <div class="pagination" style="margin-top: 10px;">
+                    <div class="pagination-info" id="sourcesPaginationInfo" style="font-size: 0.85rem;">
+                        Showing 0-0 of 0 sources
+                    </div>
+                    <div class="pagination-controls" id="sourcesPaginationControls">
+                        <!-- Pagination buttons will be generated here -->
+                    </div>
                 </div>
             </div>
         </div>
         
-        <!-- Traffic Sources Section -->
-        <div class="logs-section">
-            <div class="logs-header">
-                <h3>🌐 All Traffic Sources</h3>
-                <div style="display: flex; gap: 10px;">
-                    <select id="sourcesSort" onchange="updateSourcesTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
-                        <option value="count">Sort by Count</option>
-                        <option value="name">Sort by Name</option>
-                    </select>
-                    <select id="sourcesPageSize" onchange="currentSourcesPage = 1; updateSourcesTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
-                        <option value="10" selected>10 per page</option>
-                        <option value="25">25 per page</option>
-                        <option value="50">50 per page</option>
-                        <option value="all">Show All</option>
-                    </select>
-                    <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
-                </div>
-            </div>
-            
-            <div style="overflow-x: auto;">
-                <table class="logs-table" style="margin-bottom: 0;">
-                    <thead>
-                        <tr>
-                            <th style="width: 60px;">#</th>
-                            <th>Source</th>
-                            <th style="width: 100px;">Count</th>
-                            <th style="width: 120px;">Percentage</th>
-                            <th style="width: 200px;">Traffic Bar</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sourcesTableBody">
-                        <tr><td colspan="5">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Sources Pagination -->
-            <div class="pagination">
-                <div class="pagination-info" id="sourcesPaginationInfo">
-                    Showing 0-0 of 0 sources
-                </div>
-                <div class="pagination-controls" id="sourcesPaginationControls">
-                    <!-- Pagination buttons will be generated here -->
-                </div>
-            </div>
-        </div>
-        
-        <div class="logs-section">
+        <!-- Recent Activity Section (Full Width) -->
+        <div class="logs-section" style="width: 100%; max-width: none;">
             <div class="logs-header">
                 <h3>📝 Recent Activity</h3>
                 <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
@@ -700,8 +727,8 @@
                 </div>
             </div>
             
-            <div style="overflow-x: auto;">
-                <table class="logs-table">
+            <div style="overflow-x: auto; width: 100%;">
+                <table class="logs-table" style="width: 100%; table-layout: auto;">
                     <thead>
                         <tr>
                             <th style="cursor: pointer;" onclick="sortLogs('timestamp')">Time</th>
@@ -823,28 +850,32 @@
         function updateDashboard(data) {
             // Store API data globally for sources table
             window.lastApiData = data;
-            // Update stats cards
-            document.getElementById('totalLogs').textContent = data.total_logs.toLocaleString();
             
+            // Extract data
             const redirects = data.type_summary.redirect || 0;
             const presales = data.type_summary['pre-sale'] || 0;
             const blocks = data.type_summary.block_request || 0;
-            const mobile = data.device_summary.Mobile || 0;
-            const desktop = data.device_summary.Desktop || 0;
+            const directRedirects = data.direct_redirects || 0;
+            const presaleRedirects = data.presale_redirects || 0;
             
-            document.getElementById('successfulRedirects').textContent = redirects.toLocaleString();
-            document.getElementById('successRate').textContent = `${((redirects / data.total_logs) * 100).toFixed(1)}% success rate`;
+            // 1. Total All Traffic (/ + /pre-sale)
+            const totalAllTraffic = redirects + presales;
+            document.getElementById('totalAllTraffic').textContent = totalAllTraffic.toLocaleString();
             
-            document.getElementById('presaleTraffic').textContent = presales.toLocaleString();
-            document.getElementById('presaleRate').textContent = `${((presales / data.total_logs) * 100).toFixed(1)}% of traffic`;
-            
-            document.getElementById('blockedRequests').textContent = blocks.toLocaleString();
+            // 2. Block Traffic
+            document.getElementById('blockTraffic').textContent = blocks.toLocaleString();
             document.getElementById('blockRate').textContent = `${((blocks / data.total_logs) * 100).toFixed(1)}% blocked`;
             
-            document.getElementById('mobileTraffic').textContent = mobile.toLocaleString();
-            document.getElementById('mobileRate').textContent = `${((mobile / (mobile + desktop)) * 100).toFixed(1)}% mobile`;
+            // 3. Direct Redirect Traffic (/ only, not from /pre-sale)
+            document.getElementById('directRedirect').textContent = directRedirects.toLocaleString();
             
-            // Top browser (filter out OS names, prefer actual browsers)
+            // 4. Pre-sale Traffic (/pre-sale)
+            document.getElementById('presaleTraffic').textContent = presales.toLocaleString();
+            
+            // 5. Successfully Redirect from Pre-sale
+            document.getElementById('presaleRedirect').textContent = presaleRedirects.toLocaleString();
+            
+            // 6. Top Browser (filter out OS names, prefer actual browsers)
             const osNames = ['Android', 'iOS', 'Windows', 'Linux', 'Mac', 'iPhone', 'iPad', 'iPod', 'Windows Phone', 'BlackBerry', 'Symbian'];
             const browsers = Object.entries(data.browser_summary)
                 .filter(([name]) => !osNames.includes(name))
@@ -862,7 +893,7 @@
                 }
             }
             
-            // Top OS (prefer OS names over browsers)
+            // 7. Top OS (prefer OS names over browsers)
             const osEntries = Object.entries(data.browser_summary)
                 .filter(([name]) => osNames.includes(name))
                 .sort((a, b) => b[1] - a[1]);
@@ -873,6 +904,47 @@
             } else {
                 document.getElementById('topOS').textContent = 'Unknown';
                 document.getElementById('osCount').textContent = '0 devices';
+            }
+            
+            // 8. Top City
+            const cities = Object.entries(data.city_summary || {})
+                .sort((a, b) => b[1] - a[1]);
+            
+            if (cities.length > 0) {
+                document.getElementById('topCity').textContent = cities[0][0];
+                document.getElementById('cityCount').textContent = `${cities[0][1].toLocaleString()} visitors`;
+            } else {
+                document.getElementById('topCity').textContent = 'Unknown';
+                document.getElementById('cityCount').textContent = '0 visitors';
+            }
+            
+            // 9. Peak Hours (redirect-only from hour_summary)
+            const hours = Object.entries(data.hour_summary || {})
+                .sort((a, b) => b[1] - a[1]);
+            
+            if (hours.length > 0) {
+                document.getElementById('peakHour').textContent = hours[0][0];
+                document.getElementById('peakHourCount').textContent = `${hours[0][1].toLocaleString()} redirects`;
+            } else {
+                document.getElementById('peakHour').textContent = '--:--';
+                document.getElementById('peakHourCount').textContent = '0 redirects';
+            }
+            
+            // 10. Flow Ratio (Pre-sale vs Direct)
+            const flowData = data.flow_summary || {};
+            const presaleFlow = flowData['Pre-sale Flow'] || 0;
+            const directFlow = flowData['Direct Flow'] || 0;
+            const totalFlow = presaleFlow + directFlow;
+            
+            if (totalFlow > 0) {
+                const presalePercent = ((presaleFlow / totalFlow) * 100).toFixed(1);
+                const directPercent = ((directFlow / totalFlow) * 100).toFixed(1);
+                
+                document.getElementById('flowRatio').innerHTML = `<span style="color: #28a745;">${directPercent}%</span> : <span style="color: #007bff;">${presalePercent}%</span>`;
+                document.getElementById('flowDetails').innerHTML = `<span style="color: #28a745;">Direct</span> vs <span style="color: #007bff;">Pre-sale</span>`;
+            } else {
+                document.getElementById('flowRatio').innerHTML = '<span style="color: #28a745;">0%</span> : <span style="color: #007bff;">0%</span>';
+                document.getElementById('flowDetails').innerHTML = '<span style="color: #28a745;">Direct</span> vs <span style="color: #007bff;">Pre-sale</span>';
             }
             
             // Update charts
@@ -1017,6 +1089,12 @@
             
             currentLogsData = pageData; // Store for modal access
             
+            // Debug: Log current page data for modal sync verification
+            console.log(`Table rendered with ${pageData.length} rows (Page ${currentPage}):`);
+            pageData.slice(0, 3).forEach((log, i) => {
+                console.log(`  Row ${i + 1}: ${log.timestamp} | domain: ${log.query_params?.domain || 'null'} | type: ${log.type}`);
+            });
+            
             if (pageData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No data found</td></tr>';
                 return;
@@ -1050,22 +1128,27 @@
                 
                 // Format source - show domain parameter and referer with comma
                 let sources = [];
+                let debugInfo = { domain: null, referer: null, refererDomain: null };
                 
                 // Check domain parameter first (higher priority)
                 if (log.query_params && log.query_params.domain && log.query_params.domain !== '') {
                     sources.push(log.query_params.domain);
+                    debugInfo.domain = log.query_params.domain;
                 }
                 
                 // Check referer if different from domain parameter
                 if (log.referer) {
+                    debugInfo.referer = log.referer;
                     try {
                         const refererDomain = new URL(log.referer).hostname;
+                        debugInfo.refererDomain = refererDomain;
                         // Only add referer if it's different from domain parameter source
                         if (sources.length === 0 || !sources.includes(refererDomain)) {
                             sources.push(refererDomain);
                         }
                     } catch (e) {
                         const refererShort = log.referer.length > 20 ? log.referer.substring(0, 20) + '...' : log.referer;
+                        debugInfo.refererDomain = refererShort;
                         if (sources.length === 0 || !sources.includes(refererShort)) {
                             sources.push(refererShort);
                         }
@@ -1073,6 +1156,8 @@
                 }
                 
                 const source = sources.length > 0 ? sources.join(' <=> ') : '-';
+                
+                // Debug removed - logic confirmed working correctly
                 
                 return `
                     <tr>
@@ -1187,7 +1272,7 @@
             
             const tbody = document.getElementById('sourcesTableBody');
             const sortBy = document.getElementById('sourcesSort')?.value || 'count';
-            const pageSize = document.getElementById('sourcesPageSize')?.value || '10';
+            const pageSize = document.getElementById('sourcesPageSize')?.value || '5';
             
             // Update sources page size
             sourcesPageSize = pageSize === 'all' ? 'all' : parseInt(pageSize);
@@ -1331,7 +1416,7 @@
         function updateBlockedTable() {
             const tbody = document.getElementById('blockedTableBody');
             const sortBy = document.getElementById('blockedSort')?.value || 'count';
-            const pageSize = document.getElementById('blockedPageSize')?.value || '10';
+            const pageSize = document.getElementById('blockedPageSize')?.value || '5';
             
             // Update blocked page size
             blockedPageSize = pageSize === 'all' ? 'all' : parseInt(pageSize);
@@ -1594,17 +1679,30 @@
         let sourcesData = {};
         let allSourcesData = [];
         let currentSourcesPage = 1;
-        let sourcesPageSize = 10;
+        let sourcesPageSize = 5;
         
         // Blocked sources table management
         let blockedData = {};
         let allBlockedData = [];
         let currentBlockedPage = 1;
-        let blockedPageSize = 10;
+        let blockedPageSize = 5;
         
         function showQueryModal(logIndex) {
-            const log = currentLogsData[currentLogsData.length - 1 - logIndex]; // Reverse index
-            if (!log || !log.query_params) return;
+            const log = currentLogsData[logIndex]; // Use direct index
+            if (!log || !log.query_params) {
+                console.error(`No log found at index ${logIndex}. currentLogsData length: ${currentLogsData.length}`);
+                return;
+            }
+            
+            // Debug: Ensure we're showing the correct log entry
+            console.log(`Modal opening for row ${logIndex + 1}:`, {
+                timestamp: log.timestamp,
+                domain: log.query_params?.domain,
+                type: log.type,
+                product: log.product_name
+            });
+            
+            // Modal data processing
             
             const modal = document.getElementById('queryModal');
             const modalBody = document.getElementById('queryModalBody');

@@ -587,14 +587,15 @@
                     <thead>
                         <tr>
                             <th style="width: 60px;">#</th>
-                            <th>Source Domain</th>
-                            <th style="width: 100px;">Count</th>
+                            <th>Referer</th>
+                            <th>Domain</th>
+                            <th style="width: 100px;">Total Count</th>
                             <th style="width: 120px;">Percentage</th>
                             <th style="width: 200px;">Traffic Bar</th>
                         </tr>
                     </thead>
                     <tbody id="sourcesTableBody">
-                        <tr><td colspan="5">Loading...</td></tr>
+                        <tr><td colspan="6">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -656,10 +657,10 @@
                 <table class="logs-table">
                     <thead>
                         <tr>
-                            <th style="cursor: pointer;" onclick="sortLogs('timestamp')">Time ⚡</th>
-                            <th style="cursor: pointer;" onclick="sortLogs('type')">Type ⚡</th>
-                            <th style="cursor: pointer;" onclick="sortLogs('product_name')">Product ⚡</th>
-                            <th style="cursor: pointer;" onclick="sortLogs('device')">Device ⚡</th>
+                            <th style="cursor: pointer;" onclick="sortLogs('timestamp')">Time</th>
+                            <th style="cursor: pointer;" onclick="sortLogs('type')">Type</th>
+                            <th style="cursor: pointer;" onclick="sortLogs('product_name')">Product</th>
+                            <th style="cursor: pointer;" onclick="sortLogs('device')">Device</th>
                             <th>Source</th>
                             <th>Query Parameters</th>
                         </tr>
@@ -773,6 +774,8 @@
         
         // Update dashboard with new data
         function updateDashboard(data) {
+            // Store API data globally for sources table
+            window.lastApiData = data;
             // Update stats cards
             document.getElementById('totalLogs').textContent = data.total_logs.toLocaleString();
             
@@ -995,15 +998,29 @@
                     `;
                 }
                 
-                // Format source
-                let source = '-';
+                // Format source - show domain parameter and referer with comma
+                let sources = [];
+                // Check referer if different from domain parameter
                 if (log.referer) {
                     try {
-                        source = new URL(log.referer).hostname;
+                        const refererDomain = new URL(log.referer).hostname;
+                        // Only add referer if it's different from domain parameter source
+                        if (sources.length === 0 || !sources.includes(refererDomain)) {
+                            sources.push(refererDomain);
+                        }
                     } catch (e) {
-                        source = log.referer.length > 20 ? log.referer.substring(0, 20) + '...' : log.referer;
+                        const refererShort = log.referer.length > 20 ? log.referer.substring(0, 20) + '...' : log.referer;
+                        if (sources.length === 0 || !sources.includes(refererShort)) {
+                            sources.push(refererShort);
+                        }
                     }
                 }
+                // Check domain parameter for Recent Activity
+                if (log.query_params && log.query_params.domain && log.query_params.domain !== '') {
+                    sources.push(log.query_params.domain);
+                }
+                
+                const source = sources.length > 0 ? sources.join(' <=> ') : '-';
                 
                 return `
                     <tr>
@@ -1123,20 +1140,58 @@
             // Update sources page size
             sourcesPageSize = pageSize === 'all' ? 'all' : parseInt(pageSize);
             
-            // Convert to array and add "Direct" traffic
-            let sources = Object.entries(refererDomains || {});
+            // Create combined view: referer as main, domain as secondary info
+            let sources = [];
+            const domainSources = (window.lastApiData && window.lastApiData.query_param_sources) || {};
+            const refererSources = (window.lastApiData && window.lastApiData.referer_domains) || {};
             
-            // Add direct traffic (empty referer)
-            const directCount = allLogsData.filter(log => !log.referer || log.referer === '').length;
-            if (directCount > 0) {
-                sources.push(['Direct Traffic', directCount]);
-            }
+            // Group all unique combinations
+            const combinedData = {};
+            
+            // Process logs to find referer-domain combinations
+            allLogsData.forEach(log => {
+                let refererName = '-';
+                let domainName = '-';
+                
+                // Get referer
+                if (log.referer) {
+                    try {
+                        refererName = new URL(log.referer).hostname;
+                    } catch (e) {
+                        refererName = log.referer.length > 30 ? log.referer.substring(0, 30) + '...' : log.referer;
+                    }
+                } else {
+                    refererName = 'Direct';
+                }
+                
+                // Get domain from query params
+                if (log.query_params && log.query_params.domain) {
+                    domainName = log.query_params.domain;
+                }
+                
+                const key = `${refererName}|${domainName}`;
+                if (!combinedData[key]) {
+                    combinedData[key] = {
+                        referer: refererName,
+                        domain: domainName,
+                        count: 0
+                    };
+                }
+                combinedData[key].count++;
+            });
+            
+            // Convert to array format
+            sources = Object.values(combinedData).map(item => [
+                item.referer,    // Source Referer column
+                item.domain,     // Domain column  
+                item.count       // Total Count
+            ]);
             
             // Store all sources data
             allSourcesData = [...sources];
             
             if (sources.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No traffic sources data</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No traffic sources data</td></tr>';
                 updateSourcesPaginationInfo(0, 0, 0);
                 return;
             }
@@ -1144,9 +1199,9 @@
             // Sort sources
             sources.sort((a, b) => {
                 if (sortBy === 'name') {
-                    return a[0].localeCompare(b[0]);
+                    return a[0].localeCompare(b[0]); // Sort by referer name
                 } else {
-                    return b[1] - a[1]; // Sort by count desc
+                    return b[2] - a[2]; // Sort by count desc (index 2 is count)
                 }
             });
             
@@ -1170,11 +1225,12 @@
             }
             
             // Calculate total for percentages
-            const total = sources.reduce((sum, [, count]) => sum + count, 0);
-            const maxCount = Math.max(...sources.map(([, count]) => count));
+            const total = sources.reduce((sum, sourceData) => sum + sourceData[2], 0);
+            const maxCount = Math.max(...sources.map(sourceData => sourceData[2]));
             
-            // Generate table rows with correct numbering for pagination
-            tbody.innerHTML = currentPageSources.map(([domain, count], index) => {
+            // Generate table rows with separate domain and referer data
+            tbody.innerHTML = currentPageSources.map((sourceData, index) => {
+                const [refererName, domainName, count] = sourceData;
                 const percentage = ((count / total) * 100).toFixed(1);
                 const barWidth = (count / maxCount) * 100;
                 
@@ -1186,15 +1242,17 @@
                 let sourceClass = '';
                 let sourceIcon = '🌐';
                 
-                if (domain === 'Direct Traffic') {
+                if (refererName === 'Direct') {
                     sourceClass = 'source-direct';
                     sourceIcon = '🔗';
-                } else if (domain.includes('google')) {
+                } else if (refererName.includes('google')) {
                     sourceClass = 'source-google';
                     sourceIcon = '🔍';
-                } else if (domain.includes('facebook') || domain.includes('twitter') || domain.includes('instagram')) {
+                } else if (refererName.includes('facebook') || refererName.includes('twitter') || refererName.includes('instagram')) {
                     sourceClass = 'source-social';
                     sourceIcon = '📱';
+                } else if (domainName !== '-') {
+                    sourceIcon = '🎨'; // Different icon for domain sources
                 }
                 
                 return `
@@ -1203,9 +1261,10 @@
                         <td>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span>${sourceIcon}</span>
-                                <span title="${domain}">${domain}</span>
+                                <span title="${refererName}">${refererName}</span>
                             </div>
                         </td>
+                        <td>${domainName}</td>
                         <td><strong>${count.toLocaleString()}</strong></td>
                         <td>${percentage}%</td>
                         <td>

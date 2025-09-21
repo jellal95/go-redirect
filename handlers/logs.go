@@ -16,14 +16,15 @@ import (
 
 type LogsResponse struct {
 	// === SUMMARY (shown first) ===
-	GeneratedAt    time.Time      `json:"generated_at"`
-	TotalLogs      int            `json:"total_logs"`
-	TypeSummary    map[string]int `json:"type_summary"`     // Essential: log types
-	TypeAdsSummary map[string]int `json:"type_ads_summary"` // Essential: traffic sources
-	DeviceSummary  map[string]int `json:"device_summary"`   // Device source tracking
-	BrowserSummary map[string]int `json:"browser_summary"`  // Browser analytics
-	SpotIDSummary  map[string]int `json:"spot_id_summary"`  // Track spot performance
-	RefererDomains map[string]int `json:"referer_domains"`  // Referer domain tracking
+	GeneratedAt       time.Time      `json:"generated_at"`
+	TotalLogs         int            `json:"total_logs"`
+	TypeSummary       map[string]int `json:"type_summary"`        // Essential: log types
+	TypeAdsSummary    map[string]int `json:"type_ads_summary"`    // Essential: traffic sources
+	DeviceSummary     map[string]int `json:"device_summary"`      // Device source tracking
+	BrowserSummary    map[string]int `json:"browser_summary"`     // Browser analytics
+	SpotIDSummary     map[string]int `json:"spot_id_summary"`     // Track spot performance
+	RefererDomains    map[string]int `json:"referer_domains"`     // Sources from referer header only
+	QueryParamSources map[string]int `json:"query_param_sources"` // Sources from domain query parameter only
 	// === GEO ANALYTICS ===
 	GeoSummary     map[string]int `json:"geo_summary"`     // Country targeting
 	CitySummary    map[string]int `json:"city_summary"`    // City analytics
@@ -46,19 +47,20 @@ func LogsHandler(c *fiber.Ctx) error {
 	}
 
 	resp := LogsResponse{
-		GeneratedAt:    time.Now(),
-		TotalLogs:      0,
-		TypeSummary:    make(map[string]int),
-		ProductSummary: make(map[string]int),
-		TypeAdsSummary: make(map[string]int),
-		DeviceSummary:  make(map[string]int),
-		BrowserSummary: make(map[string]int),
-		SpotIDSummary:  make(map[string]int),
-		RefererDomains: make(map[string]int),
-		GeoSummary:     make(map[string]int),
-		CitySummary:    make(map[string]int),
-		RegionSummary:  make(map[string]int),
-		Logs:           []utils.LogEntry{},
+		GeneratedAt:       time.Now(),
+		TotalLogs:         0,
+		TypeSummary:       make(map[string]int),
+		ProductSummary:    make(map[string]int),
+		TypeAdsSummary:    make(map[string]int),
+		DeviceSummary:     make(map[string]int),
+		BrowserSummary:    make(map[string]int),
+		SpotIDSummary:     make(map[string]int),
+		RefererDomains:    make(map[string]int),
+		QueryParamSources: make(map[string]int),
+		GeoSummary:        make(map[string]int),
+		CitySummary:       make(map[string]int),
+		RegionSummary:     make(map[string]int),
+		Logs:              []utils.LogEntry{},
 	}
 
 	for _, filename := range files {
@@ -91,12 +93,15 @@ func LogsHandler(c *fiber.Ctx) error {
 				resp.BrowserSummary[entry.Browser]++
 			}
 
-			// Process referer domain
-			if entry.Referer != "" {
-				domain := extractDomainFromReferer(entry.Referer)
-				if domain != "" {
-					resp.RefererDomains[domain]++
-				}
+			// Separate tracking for query params vs referer
+			querySource := getQueryParamSource(entry)
+			if querySource != "" {
+				resp.QueryParamSources[querySource]++
+			}
+
+			refererSource := getRefererSource(entry)
+			if refererSource != "" {
+				resp.RefererDomains[refererSource]++
 			}
 
 			if entry.Extra != nil {
@@ -118,7 +123,7 @@ func LogsHandler(c *fiber.Ctx) error {
 				}
 			}
 
-			// Check spot_id from query params
+			// Check query params for additional tracking
 			if entry.QueryParams != nil {
 				if spotID, ok := entry.QueryParams["spot_id"]; ok && spotID != "" {
 					resp.SpotIDSummary[spotID]++
@@ -138,11 +143,31 @@ func LogsHandler(c *fiber.Ctx) error {
 	sortMapKeys(resp.BrowserSummary)
 	sortMapKeys(resp.SpotIDSummary)
 	sortMapKeys(resp.RefererDomains)
+	sortMapKeys(resp.QueryParamSources)
 	sortMapKeys(resp.GeoSummary)
 	sortMapKeys(resp.CitySummary)
 	sortMapKeys(resp.RegionSummary)
 
 	return c.JSON(resp)
+}
+
+// getQueryParamSource extracts source only from domain query parameter
+func getQueryParamSource(entry utils.LogEntry) string {
+	if entry.QueryParams != nil {
+		if domain, ok := entry.QueryParams["domain"]; ok && domain != "" {
+			return domain
+		}
+	}
+
+	return ""
+}
+
+// getRefererSource extracts source only from referer header
+func getRefererSource(entry utils.LogEntry) string {
+	if entry.Referer != "" {
+		return extractDomainFromReferer(entry.Referer)
+	}
+	return ""
 }
 
 // extractDomainFromReferer extracts domain from referer URL

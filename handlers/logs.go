@@ -81,30 +81,36 @@ func LogsHandler(c *fiber.Ctx) error {
 			// --- Essential summaries only ---
 			resp.TypeSummary[entry.Type]++
 
+			// Only track sources for valid traffic (redirect and pre-sale)
+			isValidTraffic := entry.Type == "redirect" || entry.Type == "pre-sale"
+
 			if entry.ProductName != "" {
 				resp.ProductSummary[entry.ProductName]++
 			}
 
-			if entry.Device != "" {
+			if entry.Device != "" && isValidTraffic {
 				resp.DeviceSummary[entry.Device]++
 			}
 
-			if entry.Browser != "" {
+			if entry.Browser != "" && isValidTraffic {
 				resp.BrowserSummary[entry.Browser]++
 			}
 
-			// Separate tracking for query params vs referer
-			querySource := getQueryParamSource(entry)
-			if querySource != "" {
-				resp.QueryParamSources[querySource]++
+			// Only track sources for valid traffic
+			if isValidTraffic {
+				querySource := getQueryParamSource(entry)
+				if querySource != "" {
+					resp.QueryParamSources[querySource]++
+				}
+
+				refererSource := getRefererSource(entry)
+				if refererSource != "" {
+					resp.RefererDomains[refererSource]++
+				}
 			}
 
-			refererSource := getRefererSource(entry)
-			if refererSource != "" {
-				resp.RefererDomains[refererSource]++
-			}
-
-			if entry.Extra != nil {
+			// Track additional data for valid traffic only
+			if isValidTraffic && entry.Extra != nil {
 				if typeAds, ok := entry.Extra["type_ads"].(string); ok && typeAds != "" {
 					resp.TypeAdsSummary[typeAds]++
 				}
@@ -123,8 +129,8 @@ func LogsHandler(c *fiber.Ctx) error {
 				}
 			}
 
-			// Check query params for additional tracking
-			if entry.QueryParams != nil {
+			// Check query params for additional tracking (valid traffic only)
+			if isValidTraffic && entry.QueryParams != nil {
 				if spotID, ok := entry.QueryParams["spot_id"]; ok && spotID != "" {
 					resp.SpotIDSummary[spotID]++
 				}

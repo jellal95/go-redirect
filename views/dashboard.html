@@ -563,18 +563,18 @@
             </div>
         </div>
         
-        <!-- Traffic Sources Section -->
+        <!-- Blocked Traffic Sources Section -->
         <div class="logs-section">
             <div class="logs-header">
-                <h3>🌐 All Traffic Sources</h3>
+                <h3>🚫 Blocked Traffic Sources</h3>
                 <div style="display: flex; gap: 10px;">
-                    <select id="sourcesSort" onchange="updateSourcesTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
+                    <select id="blockedSort" onchange="updateBlockedTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
                         <option value="count">Sort by Count</option>
                         <option value="name">Sort by Name</option>
                     </select>
-                    <select id="sourcesPageSize" onchange="currentSourcesPage = 1; updateSourcesTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
-                        <option value="10">10 per page</option>
-                        <option value="25" selected>25 per page</option>
+                    <select id="blockedPageSize" onchange="currentBlockedPage = 1; updateBlockedTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
+                        <option value="10" selected>10 per page</option>
+                        <option value="25">25 per page</option>
                         <option value="50">50 per page</option>
                         <option value="all">Show All</option>
                     </select>
@@ -587,15 +587,61 @@
                     <thead>
                         <tr>
                             <th style="width: 60px;">#</th>
-                            <th>Referer</th>
-                            <th>Domain</th>
-                            <th style="width: 100px;">Total Count</th>
+                            <th>Blocked Source</th>
+                            <th style="width: 100px;">Count</th>
+                            <th style="width: 120px;">Percentage</th>
+                            <th style="width: 200px;">Block Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="blockedTableBody">
+                        <tr><td colspan="5">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Blocked Pagination -->
+            <div class="pagination">
+                <div class="pagination-info" id="blockedPaginationInfo">
+                    Showing 0-0 of 0 blocked sources
+                </div>
+                <div class="pagination-controls" id="blockedPaginationControls">
+                    <!-- Pagination buttons will be generated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Traffic Sources Section -->
+        <div class="logs-section">
+            <div class="logs-header">
+                <h3>🌐 All Traffic Sources</h3>
+                <div style="display: flex; gap: 10px;">
+                    <select id="sourcesSort" onchange="updateSourcesTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
+                        <option value="count">Sort by Count</option>
+                        <option value="name">Sort by Name</option>
+                    </select>
+                    <select id="sourcesPageSize" onchange="currentSourcesPage = 1; updateSourcesTable()" style="padding: 6px; border-radius: 4px; border: 1px solid #ddd;">
+                        <option value="10" selected>10 per page</option>
+                        <option value="25">25 per page</option>
+                        <option value="50">50 per page</option>
+                        <option value="all">Show All</option>
+                    </select>
+                    <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
+                </div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="logs-table" style="margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">#</th>
+                            <th>Source</th>
+                            <th style="width: 100px;">Count</th>
                             <th style="width: 120px;">Percentage</th>
                             <th style="width: 200px;">Traffic Bar</th>
                         </tr>
                     </thead>
                     <tbody id="sourcesTableBody">
-                        <tr><td colspan="6">Loading...</td></tr>
+                        <tr><td colspan="5">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -646,6 +692,7 @@
                     <label>Per page:</label>
                     <select id="pageSizeFilter" onchange="applyFilters()">
                         <option value="20">20</option>
+                        <option value="25" selected>25</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
                         <option value="all">All</option>
@@ -834,6 +881,9 @@
             // Update sources table
             updateSourcesTable(data.referer_domains);
             
+            // Update blocked sources table
+            updateBlockedTable();
+            
             // Update logs table
             updateLogsTable(data.logs);
             
@@ -1000,6 +1050,12 @@
                 
                 // Format source - show domain parameter and referer with comma
                 let sources = [];
+                
+                // Check domain parameter first (higher priority)
+                if (log.query_params && log.query_params.domain && log.query_params.domain !== '') {
+                    sources.push(log.query_params.domain);
+                }
+                
                 // Check referer if different from domain parameter
                 if (log.referer) {
                     try {
@@ -1014,10 +1070,6 @@
                             sources.push(refererShort);
                         }
                     }
-                }
-                // Check domain parameter for Recent Activity
-                if (log.query_params && log.query_params.domain && log.query_params.domain !== '') {
-                    sources.push(log.query_params.domain);
                 }
                 
                 const source = sources.length > 0 ? sources.join(' <=> ') : '-';
@@ -1135,22 +1187,23 @@
             
             const tbody = document.getElementById('sourcesTableBody');
             const sortBy = document.getElementById('sourcesSort')?.value || 'count';
-            const pageSize = document.getElementById('sourcesPageSize')?.value || '25';
+            const pageSize = document.getElementById('sourcesPageSize')?.value || '10';
             
             // Update sources page size
             sourcesPageSize = pageSize === 'all' ? 'all' : parseInt(pageSize);
             
-            // Create combined view: referer as main, domain as secondary info
+            // Create combined referer <=> domain view from logs
             let sources = [];
-            const domainSources = (window.lastApiData && window.lastApiData.query_param_sources) || {};
-            const refererSources = (window.lastApiData && window.lastApiData.referer_domains) || {};
-            
-            // Group all unique combinations
             const combinedData = {};
             
-            // Process logs to find referer-domain combinations
+            // Process logs to find referer-domain combinations (only valid traffic)
             allLogsData.forEach(log => {
-                let refererName = '-';
+                // Only count redirect and pre-sale traffic
+                if (log.type !== 'redirect' && log.type !== 'pre-sale') {
+                    return; // Skip blocked requests and other invalid traffic
+                }
+                
+                let refererName = 'Direct';
                 let domainName = '-';
                 
                 // Get referer
@@ -1160,8 +1213,6 @@
                     } catch (e) {
                         refererName = log.referer.length > 30 ? log.referer.substring(0, 30) + '...' : log.referer;
                     }
-                } else {
-                    refererName = 'Direct';
                 }
                 
                 // Get domain from query params
@@ -1169,29 +1220,23 @@
                     domainName = log.query_params.domain;
                 }
                 
-                const key = `${refererName}|${domainName}`;
-                if (!combinedData[key]) {
-                    combinedData[key] = {
-                        referer: refererName,
-                        domain: domainName,
-                        count: 0
-                    };
+                // Create combined key
+                const combinedSource = domainName !== '-' ? `${domainName} <=> ${refererName}` : refererName;
+                
+                if (!combinedData[combinedSource]) {
+                    combinedData[combinedSource] = 0;
                 }
-                combinedData[key].count++;
+                combinedData[combinedSource]++;
             });
             
             // Convert to array format
-            sources = Object.values(combinedData).map(item => [
-                item.referer,    // Source Referer column
-                item.domain,     // Domain column  
-                item.count       // Total Count
-            ]);
+            sources = Object.entries(combinedData).map(([source, count]) => [source, count]);
             
             // Store all sources data
             allSourcesData = [...sources];
             
             if (sources.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No traffic sources data</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No traffic sources data</td></tr>';
                 updateSourcesPaginationInfo(0, 0, 0);
                 return;
             }
@@ -1199,9 +1244,9 @@
             // Sort sources
             sources.sort((a, b) => {
                 if (sortBy === 'name') {
-                    return a[0].localeCompare(b[0]); // Sort by referer name
+                    return a[0].localeCompare(b[0]); // Sort by source name
                 } else {
-                    return b[2] - a[2]; // Sort by count desc (index 2 is count)
+                    return b[1] - a[1]; // Sort by count desc (index 1 is count)
                 }
             });
             
@@ -1225,14 +1270,14 @@
             }
             
             // Calculate total for percentages
-            const total = sources.reduce((sum, sourceData) => sum + sourceData[2], 0);
-            const maxCount = Math.max(...sources.map(sourceData => sourceData[2]));
+            const total = sources.reduce((sum, sourceData) => sum + sourceData[1], 0);
+            const maxCount = Math.max(...sources.map(sourceData => sourceData[1]));
             
-            // Generate table rows with separate domain and referer data
+            // Generate table rows with combined source data
             tbody.innerHTML = currentPageSources.map((sourceData, index) => {
-                const [refererName, domainName, count] = sourceData;
+                const [sourceName, count] = sourceData;
                 const percentage = ((count / total) * 100).toFixed(1);
-                const barWidth = (count / maxCount) * 100;
+                const barWidth = parseFloat(percentage); // Use actual percentage for bar width
                 
                 // Calculate the actual row number (considering pagination)
                 const rowNumber = sourcesPageSize === 'all' ? index + 1 : 
@@ -1242,17 +1287,18 @@
                 let sourceClass = '';
                 let sourceIcon = '🌐';
                 
-                if (refererName === 'Direct') {
+                if (sourceName.includes(' <=> ')) {
+                    sourceClass = 'source-combined';
+                    sourceIcon = '🔗'; // Combined source icon
+                } else if (sourceName.includes('Direct')) {
                     sourceClass = 'source-direct';
-                    sourceIcon = '🔗';
-                } else if (refererName.includes('google')) {
+                    sourceIcon = '🔗'; // Direct traffic icon
+                } else if (sourceName.includes('google')) {
                     sourceClass = 'source-google';
-                    sourceIcon = '🔍';
-                } else if (refererName.includes('facebook') || refererName.includes('twitter') || refererName.includes('instagram')) {
+                    sourceIcon = '🔍'; // Search icon
+                } else if (sourceName.includes('facebook') || sourceName.includes('twitter') || sourceName.includes('instagram')) {
                     sourceClass = 'source-social';
-                    sourceIcon = '📱';
-                } else if (domainName !== '-') {
-                    sourceIcon = '🎨'; // Different icon for domain sources
+                    sourceIcon = '📱'; // Social media icon
                 }
                 
                 return `
@@ -1261,10 +1307,9 @@
                         <td>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span>${sourceIcon}</span>
-                                <span title="${refererName}">${refererName}</span>
+                                <span title="${sourceName}">${sourceName}</span>
                             </div>
                         </td>
-                        <td>${domainName}</td>
                         <td><strong>${count.toLocaleString()}</strong></td>
                         <td>${percentage}%</td>
                         <td>
@@ -1280,6 +1325,191 @@
             
             // Update pagination info
             updateSourcesPaginationInfo(totalItems, currentSourcesPage, totalPages);
+        }
+        
+        // Update blocked sources table
+        function updateBlockedTable() {
+            const tbody = document.getElementById('blockedTableBody');
+            const sortBy = document.getElementById('blockedSort')?.value || 'count';
+            const pageSize = document.getElementById('blockedPageSize')?.value || '10';
+            
+            // Update blocked page size
+            blockedPageSize = pageSize === 'all' ? 'all' : parseInt(pageSize);
+            
+            // Create blocked traffic data from logs
+            let blockedSources = [];
+            const blockedCombinedData = {};
+            
+            // Process logs to find blocked referer-domain combinations
+            allLogsData.forEach(log => {
+                // Only count blocked requests
+                if (log.type !== 'block_request') {
+                    return; // Skip non-blocked traffic
+                }
+                
+                let refererName = 'Direct';
+                let domainName = '-';
+                
+                // Get referer
+                if (log.referer) {
+                    try {
+                        refererName = new URL(log.referer).hostname;
+                    } catch (e) {
+                        refererName = log.referer.length > 30 ? log.referer.substring(0, 30) + '...' : log.referer;
+                    }
+                }
+                
+                // Get domain from query params
+                if (log.query_params && log.query_params.domain) {
+                    domainName = log.query_params.domain;
+                }
+                
+                // Create combined key
+                const combinedSource = domainName !== '-' ? `${domainName} <=> ${refererName}` : refererName;
+                
+                if (!blockedCombinedData[combinedSource]) {
+                    blockedCombinedData[combinedSource] = 0;
+                }
+                blockedCombinedData[combinedSource]++;
+            });
+            
+            // Convert to array format
+            blockedSources = Object.entries(blockedCombinedData).map(([source, count]) => [source, count]);
+            
+            // Store all blocked sources data
+            allBlockedData = [...blockedSources];
+            
+            if (blockedSources.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No blocked traffic sources</td></tr>';
+                updateBlockedPaginationInfo(0, 0, 0);
+                return;
+            }
+            
+            // Sort blocked sources
+            blockedSources.sort((a, b) => {
+                if (sortBy === 'name') {
+                    return a[0].localeCompare(b[0]); // Sort by source name
+                } else {
+                    return b[1] - a[1]; // Sort by count desc
+                }
+            });
+            
+            // Calculate pagination
+            const totalItems = blockedSources.length;
+            const totalPages = blockedPageSize === 'all' ? 1 : Math.ceil(totalItems / blockedPageSize);
+            
+            // Adjust current page if necessary
+            if (currentBlockedPage > totalPages) {
+                currentBlockedPage = totalPages || 1;
+            }
+            
+            // Get current page data
+            let currentPageBlockedSources;
+            if (blockedPageSize === 'all') {
+                currentPageBlockedSources = blockedSources;
+            } else {
+                const startIndex = (currentBlockedPage - 1) * blockedPageSize;
+                const endIndex = startIndex + blockedPageSize;
+                currentPageBlockedSources = blockedSources.slice(startIndex, endIndex);
+            }
+            
+            // Calculate total for percentages
+            const total = blockedSources.reduce((sum, sourceData) => sum + sourceData[1], 0);
+            
+            // Generate table rows with blocked source data
+            tbody.innerHTML = currentPageBlockedSources.map((sourceData, index) => {
+                const [sourceName, count] = sourceData;
+                const percentage = ((count / total) * 100).toFixed(1);
+                const barWidth = parseFloat(percentage);
+                
+                // Calculate the actual row number (considering pagination)
+                const rowNumber = blockedPageSize === 'all' ? index + 1 : 
+                    ((currentBlockedPage - 1) * blockedPageSize) + index + 1;
+                
+                // Determine blocked source styling
+                let sourceClass = 'source-blocked';
+                let sourceIcon = '🚫';
+                
+                if (sourceName.includes(' <=> ')) {
+                    sourceIcon = '🚫'; // Blocked combined source
+                } else if (sourceName.includes('Direct')) {
+                    sourceIcon = '🚫'; // Blocked direct traffic
+                } else {
+                    sourceIcon = '🚫'; // Blocked referer
+                }
+                
+                return `
+                    <tr>
+                        <td><strong>${rowNumber}</strong></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span>${sourceIcon}</span>
+                                <span title="${sourceName}" style="color: #dc3545;">${sourceName}</span>
+                            </div>
+                        </td>
+                        <td><strong style="color: #dc3545;">${count.toLocaleString()}</strong></td>
+                        <td>${percentage}%</td>
+                        <td>
+                            <div class="traffic-bar">
+                                <div class="traffic-bar-fill" style="width: ${barWidth}%; background-color: #dc3545;">
+                                    ${barWidth > 20 ? percentage + '%' : ''}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Update pagination info
+            updateBlockedPaginationInfo(totalItems, currentBlockedPage, totalPages);
+        }
+        
+        // Blocked pagination helper functions
+        function updateBlockedPaginationInfo(totalItems, currentPage, totalPages) {
+            const infoElement = document.getElementById('blockedPaginationInfo');
+            const controlsElement = document.getElementById('blockedPaginationControls');
+            
+            if (blockedPageSize === 'all' || totalItems === 0) {
+                infoElement.textContent = `Showing ${totalItems} blocked sources`;
+                controlsElement.innerHTML = '';
+                return;
+            }
+            
+            const startItem = Math.min(((currentPage - 1) * blockedPageSize) + 1, totalItems);
+            const endItem = Math.min(currentPage * blockedPageSize, totalItems);
+            
+            infoElement.textContent = `Showing ${startItem}-${endItem} of ${totalItems} blocked sources`;
+            
+            // Generate pagination controls
+            let buttonsHtml = '';
+            
+            // Previous button
+            buttonsHtml += `<button class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changeBlockedPage(${currentPage - 1})">&laquo;</button>`;
+            
+            // Page numbers
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                buttonsHtml += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="changeBlockedPage(${i})">${i}</button>`;
+            }
+            
+            // Next button
+            buttonsHtml += `<button class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changeBlockedPage(${currentPage + 1})">&raquo;</button>`;
+            
+            controlsElement.innerHTML = buttonsHtml;
+        }
+        
+        function changeBlockedPage(page) {
+            const totalPages = blockedPageSize === 'all' ? 1 : Math.ceil(allBlockedData.length / blockedPageSize);
+            if (page < 1 || page > totalPages) return;
+            currentBlockedPage = page;
+            updateBlockedTable();
         }
         
         // Get color for log type
@@ -1356,7 +1586,7 @@
         let filteredLogsData = [];
         let currentLogsData = [];
         let currentPage = 1;
-        let pageSize = 20;
+        let pageSize = 25;
         let sortField = 'timestamp';
         let sortDirection = 'desc';
         
@@ -1364,7 +1594,13 @@
         let sourcesData = {};
         let allSourcesData = [];
         let currentSourcesPage = 1;
-        let sourcesPageSize = 25;
+        let sourcesPageSize = 10;
+        
+        // Blocked sources table management
+        let blockedData = {};
+        let allBlockedData = [];
+        let currentBlockedPage = 1;
+        let blockedPageSize = 10;
         
         function showQueryModal(logIndex) {
             const log = currentLogsData[currentLogsData.length - 1 - logIndex]; // Reverse index

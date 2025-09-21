@@ -835,6 +835,56 @@
             });
         }
         
+        // Helper function to make source clickable if it's a URL
+        function makeSourceClickable(source, originalUrl = null) {
+            // Skip if source is just a dash or "Direct"
+            if (source === '-' || source === 'Direct') {
+                return source;
+            }
+            
+            // Handle combined sources (domain <=> referer)
+            if (source.includes(' <=> ')) {
+                const [domain, referer] = source.split(' <=> ');
+                const domainLink = makeSingleClickable(domain.trim());
+                const refererLink = makeSingleClickable(referer.trim(), originalUrl);
+                return `${domainLink} <=> ${refererLink}`;
+            }
+            
+            // Handle single source
+            return makeSingleClickable(source, originalUrl);
+        }
+        
+        // Helper function to make a single domain/URL clickable
+        function makeSingleClickable(source, originalUrl = null) {
+            // Skip if source is just a dash or "Direct"
+            if (source === '-' || source === 'Direct') {
+                return source;
+            }
+            
+            // Extract URL from source (could be domain or full URL)
+            let url = '';
+            let displayText = source;
+            
+            // If we have original URL, use that
+            if (originalUrl) {
+                url = originalUrl;
+            } else {
+                // Try to construct URL from source
+                if (source.startsWith('http://') || source.startsWith('https://')) {
+                    url = source;
+                } else if (source.includes('.')) {
+                    // Assume it's a domain
+                    url = `https://${source}`;
+                } else {
+                    // Not a URL, return as-is
+                    return source;
+                }
+            }
+            
+            // Return clickable link
+            return `<a href="${url}" target="_blank" style="color: #667eea; text-decoration: none; border-bottom: 1px dotted #667eea;" title="Open ${url} in new tab">${displayText}</a>`;
+        }
+        
         // Fetch and update dashboard data
         async function fetchDashboardData() {
             try {
@@ -1165,7 +1215,7 @@
                         <td><span style="background: ${getTypeColor(log.type)}; padding: 3px 8px; border-radius: 12px; color: white; font-size: 0.8rem;">${log.type}</span></td>
                         <td>${log.product_name || '-'}</td>
                         <td>${log.device || '-'}</td>
-                        <td title="${log.referer || ''}">${source}</td>
+                        <td title="${log.referer || ''}">${makeSourceClickable(source, log.referer)}</td>
                         <td class="query-params-cell">${queryParamsDisplay}</td>
                     </tr>
                 `;
@@ -1392,7 +1442,7 @@
                         <td>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span>${sourceIcon}</span>
-                                <span title="${sourceName}">${sourceName}</span>
+                                <span title="${sourceName}">${makeSourceClickable(sourceName)}</span>
                             </div>
                         </td>
                         <td><strong>${count.toLocaleString()}</strong></td>
@@ -1529,7 +1579,7 @@
                         <td>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span>${sourceIcon}</span>
-                                <span title="${sourceName}" style="color: #dc3545;">${sourceName}</span>
+                                <span title="${sourceName}" style="color: #dc3545;">${makeSourceClickable(sourceName)}</span>
                             </div>
                         </td>
                         <td><strong style="color: #dc3545;">${count.toLocaleString()}</strong></td>

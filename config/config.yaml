@@ -42,13 +42,13 @@ products:
     url: "https://s.shopee.co.id/40X6O25UZO?sub_id={click_id}--{campaign_id}--{spot_id}--{type_ads}--{domain}"
     percentage: 25
 
-  - name: "Accesstrade - Shopee ID KOL Tier 1"
-    url: "https://atid.me/0095ot002lt5?utm_source={spot_id}--{domain}--{type_ads}"
+  - name: "Accesstrade - Shopee ID -  Komisi Xtra - KOL Tier 1"
+    url: "https://atid.me/go/Ge9YbZ4P?utm_source={spot_id}--{domain}--{type_ads}"
     percentage: 25
 
-  - name: "Lazada Direct - Product Recommendation"
-    url: "https://c.lazada.co.id/t/c.1AtgLz?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 1
+  - name: "Accesstrade - Shopee ID KOL Tier 1"
+    url: "https://atid.me/0095ot002lt5?utm_source={spot_id}--{domain}--{type_ads}"
+    percentage: 3
 
   - name: "Lazada Direct - 9.9 Mega Brand Sale - Bonus offer"
     url: "https://c.lazada.co.id/t/c.c1Yk9D?sub_id1={siteid}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"

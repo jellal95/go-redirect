@@ -14,20 +14,6 @@ import (
 )
 
 func main() {
-	//// Load .env file
-	//if err := godotenv.Load(); err != nil {
-	//	log.Println("No .env file found, using system environment")
-	//}
-	//
-	//_, err := utils.InitDB()
-	//if err != nil {
-	//	panic(err)
-	//}
-	//
-	//if err := utils.Migrate(); err != nil {
-	//	panic(err)
-	//}
-
 	// ========== 1. Load Campaign Config ==========
 	appCfg, err := utils.LoadConfig("config/config.yaml")
 	if err != nil {

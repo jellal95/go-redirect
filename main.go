@@ -73,6 +73,7 @@ func main() {
 	app.Get("/postbacks", handlers.GetPostbacks)
 	app.Get("/article", handlers.ArticleHandler)
 	app.Get("/main", handlers.MainHandler)
+	app.Get("/agoda-verification-page", handlers.AgodaVerificationHandler)
 
 	// ========== 6.5. Postback endpoint (logging only, no bot filter) ==========
 	app.Get("/postback", middleware.RequestLogger(), handlers.PostbackHandler)

@@ -38,3 +38,6 @@ func MainHandler(c *fiber.Ctx) error {
 
 	return c.Render("main", products)
 }
+func AgodaVerificationHandler(c *fiber.Ctx) error {
+	return c.Render("AgodaPartnerVerification", fiber.Map{})
+}

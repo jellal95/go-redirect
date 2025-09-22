@@ -11,7 +11,7 @@ RUN go mod download && go mod verify
 COPY . .
 
 # Build binary (tidak verbose)
-RUN CGO_ENABLED=0 GOOS=linux go build -o /run-app ./...
+RUN CGO_ENABLED=0 GOOS=linux go build -o /run-app ./
 
 # Runtime image
 FROM debian:bookworm-slim

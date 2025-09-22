@@ -46,6 +46,10 @@ products:
     url: "https://atid.me/go/Ge9YbZ4P?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
     percentage: 25
 
+  - name: "Agoda Direct - Text Link"
+    url: "https://www.agoda.com/partners/partnersearch.aspx?pcs=1&cid=1950504&hl=id-id&city=8691"
+    percentage: 7
+
   - name: "Accesstrade - Shopee ID KOL Tier 1"
     url: "https://atid.me/0095ot002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
     percentage: 3

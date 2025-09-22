@@ -1,26 +1,32 @@
-ARG GO_VERSION=1
-FROM golang:${GO_VERSION}-bookworm as builder
+ARG GO_VERSION=1.21
+FROM golang:${GO_VERSION}-bookworm AS builder
 
-WORKDIR /usr/src/app
-COPY go.mod go.sum ./
-RUN go mod download && go mod verify
-COPY . .
-RUN go build -v -o /run-app .
-
-
-FROM debian:bookworm
-
-# Set working directory
 WORKDIR /app
 
-# Copy the binary from builder stage
-COPY --from=builder /run-app /usr/local/bin/
+# Copy only go.mod and go.sum first to cache dependencies
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
 
-# Copy necessary files and directories
-COPY --from=builder /usr/src/app/config ./config
-COPY --from=builder /usr/src/app/views ./views
-COPY --from=builder /usr/src/app/GeoLite2-City.mmdb ./
-COPY --from=builder /usr/src/app/GeoLite2-ASN.mmdb ./
-COPY --from=builder /usr/src/app/GeoLite2-Country.mmdb ./
+# Copy source code
+COPY . .
+
+# Build binary (tidak verbose)
+RUN CGO_ENABLED=0 GOOS=linux go build -o /run-app ./...
+
+# Runtime image
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
+# Copy binary
+COPY --from=builder /run-app /usr/local/bin/run-app
+
+# Copy config and views
+COPY --from=builder /app/config ./config
+COPY --from=builder /app/views ./views
+COPY --from=builder /app/GeoLite2-*.mmdb ./
+
+# Reduce image size
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
 CMD ["run-app"]

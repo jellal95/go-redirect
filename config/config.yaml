@@ -33,20 +33,6 @@ bot_filter:
     - "headless"
   blacklist_ip_prefix: []
   # Exact match
-  blacklist_referrer:
-    - "744745.popcash.net"
-    - "o3sxhw5ad.com"
-    - "1494502.com"
-    - "linggar.store"
-    - "1503351.com"
-    - "kts.vasstycom.com"
-    - "95617713516476.com"
-
-  blacklist_ref_regex:
-    - ".*popcash\\.net.*"
-    - ".*o3sxhw5ad\\.com.*"
-    - ".*1494502\\.com.*"
-    - ".*linggar\\.store.*"
 
 products:
   - name: "Shopee Direct - Anwar"

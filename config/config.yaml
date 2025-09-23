@@ -37,34 +37,39 @@ bot_filter:
 products:
   - name: "Shopee Direct - Anwar"
     url: "https://s.shopee.co.id/5VLlFD7dZe?sub_id={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 30
+    percentage: 28
+
   - name: "Shopee Direct - Rima"
     url: "https://s.shopee.co.id/40X6O25UZO?sub_id={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 25
+    percentage: 18
 
-  - name: "Accesstrade - Shopee ID -  Komisi Xtra - KOL Tier 1"
+  - name: "Accesstrade - Shopee ID - Komisi Xtra - KOL Tier 1"
     url: "https://atid.me/go/Ge9YbZ4P?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 25
+    percentage: 18
+
+  - name: "CPAGRIP - Smartwatch Sweepstakes"
+    url: "https://singingfiles.com/show.php?l=0&u=2453609&id=72087&tracking_id={click_id}"
+    percentage: 15
 
   - name: "Agoda Direct - Text Link"
     url: "https://www.agoda.com/partners/partnersearch.aspx?pcs=1&cid=1950504&hl=id-id&city=8691"
-    percentage: 7
+    percentage: 6
 
   - name: "Accesstrade - Shopee ID KOL Tier 1"
     url: "https://atid.me/0095ot002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 3
+    percentage: 5
 
   - name: "Lazada Direct - 9.9 Mega Brand Sale - Bonus offer"
     url: "https://c.lazada.co.id/t/c.c1Yk9D?sub_id1={spot_id}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 1
+    percentage: 3
 
   - name: "Lazada Direct - Buy at Best Price"
     url: "https://c.lazada.co.id/t/c.c1Yk9A?sub_id1={spot_id}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 1
+    percentage: 3
 
   - name: "Accesstrade - Lazada Kol"
     url: "https://atid.me/0082ly002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 1
+    percentage: 2
 
   - name: "Ecomobi - Tiktok Shop"
     url: "https://goeco.mobi/IZ8PRcbo?sub1={campaign_id}-{spot_id}-{type_ads}-{domain}"

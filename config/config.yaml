@@ -49,7 +49,7 @@ products:
 
   - name: "CPAGRIP - Smartwatch Sweepstakes"
     url: "https://singingfiles.com/show.php?l=0&u=2453609&id=72087&tracking_id={click_id}"
-    percentage: 15
+    percentage: 3
 
   - name: "Agoda Direct - Text Link"
     url: "https://www.agoda.com/partners/partnersearch.aspx?pcs=1&cid=1950504&hl=id-id&city=8691"
@@ -63,10 +63,6 @@ products:
     url: "https://c.lazada.co.id/t/c.c1Yk9D?sub_id1={spot_id}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
     percentage: 3
 
-  - name: "Lazada Direct - Buy at Best Price"
-    url: "https://c.lazada.co.id/t/c.c1Yk9A?sub_id1={spot_id}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 3
-
   - name: "Accesstrade - Lazada Kol"
     url: "https://atid.me/0082ly002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
     percentage: 2
@@ -75,6 +71,10 @@ products:
     url: "https://goeco.mobi/IZ8PRcbo?sub1={campaign_id}-{spot_id}-{type_ads}-{domain}"
     percentage: 1
 
+  - name: "Involve - Lapak Gaming"
+    url: "https://invl.app/clmzh3h"
+    percentage: 10
+
   - name: "Involve - Traveloka"
-    url: "https://invl.me/clmyea0"
-    percentage: 1
+    url: "https://invl.me/clmzh4l"
+    percentage: 3

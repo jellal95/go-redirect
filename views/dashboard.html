@@ -490,6 +490,43 @@
             <h1>🚀 Go-Redirect Analytics</h1>
             <p>Real-time Traffic & Conversion Dashboard</p>
         </div>
+
+        <!-- 🔽 Tambahin pixel status di sini -->
+        <div id="pixelStatus" style="
+            margin: 10px 0;
+            padding: 8px 12px;
+            background: #f0f4ff;
+            border: 1px solid #667eea;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #333;
+        ">
+            Pixel Status: <span id="pixelText">Checking...</span>
+        </div>
+
+        <!-- pixel PropellerAds -->
+        <script src="https://my.rtmark.net/p.js?f=sync&lr=1&partner=8f37088fa0906947f5d5097f13981ea1de9f511ba54aee08ddc1d1d484dcac73" defer></script>
+        <img src="https://my.rtmark.net/img.gif?f=sync&lr=1&partner=8f37088fa0906947f5d5097f13981ea1de9f511ba54aee08ddc1d1d484dcac73" width="1" height="1" />
+
+        <!-- script cek pixel -->
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const pixelText = document.getElementById("pixelText");
+
+                const img = new Image();
+                img.src = "https://my.rtmark.net/img.gif?f=sync&lr=1&partner=8f37088fa0906947f5d5097f13981ea1de9f511ba54aee08ddc1d1d484dcac73&rand=" + Date.now();
+
+                img.onload = function () {
+                    pixelText.textContent = "✅ Pixel Loaded";
+                    pixelText.style.color = "green";
+                };
+
+                img.onerror = function () {
+                    pixelText.textContent = "❌ Pixel Blocked/Failed";
+                    pixelText.style.color = "red";
+                };
+            });
+        </script>
         
         <div class="top-section">
             <div class="live-indicator">

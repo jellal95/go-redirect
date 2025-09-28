@@ -1142,7 +1142,7 @@
             // Debug: Log current page data for modal sync verification
             console.log(`Table rendered with ${pageData.length} rows (Page ${currentPage}):`);
             pageData.slice(0, 3).forEach((log, i) => {
-                console.log(`  Row ${i + 1}: ${log.timestamp} | domain: ${log.query_params?.domain || 'null'} | type: ${log.type}`);
+                console.log(`  Row ${i + 1}: ${log.timestamp} | domain: ${log.query_params?.domain || 'null'} | ref: ${log.query_params?.ref || 'null'} | type: ${log.type}`);
             });
             
             if (pageData.length === 0) {
@@ -1178,21 +1178,26 @@
                 
                 // Format source - show domain parameter and referer with comma
                 let sources = [];
-                let debugInfo = { domain: null, referer: null, refererDomain: null };
+                let debugInfo = { domain: null, referer: null, refererDomain: null, ref: null };
                 
                 // Check domain parameter first (higher priority)
                 if (log.query_params && log.query_params.domain && log.query_params.domain !== '') {
                     sources.push(log.query_params.domain);
                     debugInfo.domain = log.query_params.domain;
                 }
+
+                if (log.query_params && log.query_params.domain && log.query_params.ref !== '') {
+                    sources.push(log.query_params.ref);
+                    debugInfo.ref = log.query_params.ref;
+                }
                 
-                // Check referer if different from domain parameter
+                // Check the referer if different from the domain parameter
                 if (log.referer) {
                     debugInfo.referer = log.referer;
                     try {
                         const refererDomain = new URL(log.referer).hostname;
                         debugInfo.refererDomain = refererDomain;
-                        // Only add referer if it's different from domain parameter source
+                        // Only add a referer if it's different from a domain parameter source
                         if (sources.length === 0 || !sources.includes(refererDomain)) {
                             sources.push(refererDomain);
                         }
@@ -1354,6 +1359,10 @@
                 if (log.query_params && log.query_params.domain) {
                     domainName = log.query_params.domain;
                 }
+
+                if (log.query_params && log.query_params.ref) {
+                    domainName = log.query_params.ref;
+                }
                 
                 // Create combined key
                 const combinedSource = domainName !== '-' ? `${domainName} <=> ${refererName}` : refererName;
@@ -1498,8 +1507,12 @@
                 if (log.query_params && log.query_params.domain) {
                     domainName = log.query_params.domain;
                 }
+
+                if (log.query_params && log.query_params.ref) {
+                    domainName = log.query_params.ref;
+                }
                 
-                // Create combined key
+                // Create a combined key
                 const combinedSource = domainName !== '-' ? `${domainName} <=> ${refererName}` : refererName;
                 
                 if (!blockedCombinedData[combinedSource]) {
@@ -1748,6 +1761,7 @@
             console.log(`Modal opening for row ${logIndex + 1}:`, {
                 timestamp: log.timestamp,
                 domain: log.query_params?.domain,
+                ref: log.query_params?.ref,
                 type: log.type,
                 product: log.product_name
             });

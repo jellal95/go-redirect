@@ -53,11 +53,7 @@ products:
 
   - name: "Accesstrade - Shopee ID KOL Tier 1"
     url: "https://atid.me/0095ot002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 5
-
-  - name: "Lazada Direct - 9.9 Mega Brand Sale - Bonus offer"
-    url: "https://c.lazada.co.id/t/c.c1Yk9D?sub_id1={spot_id}&sub_id2={sub_id}&sub_id3={type_ads}&sub_aff_id={sub_id}"
-    percentage: 3
+    percentage: 2
 
   - name: "Accesstrade - Lazada Kol"
     url: "https://atid.me/0082ly002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
@@ -69,7 +65,7 @@ products:
 
   - name: "Involve - Lapak Gaming"
     url: "https://invl.app/clmzh3h"
-    percentage: 10
+    percentage: 6
 
   - name: "Involve - Traveloka"
     url: "https://invl.me/clmzh4l"

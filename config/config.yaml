@@ -37,36 +37,40 @@ bot_filter:
 products:
   - name: "Shopee Direct - Anwar"
     url: "https://s.shopee.co.id/5VLlFD7dZe?sub_id={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 28
+    percentage: 30
 
   - name: "Shopee Direct - Rima"
     url: "https://s.shopee.co.id/40X6O25UZO?sub_id={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 18
+    percentage: 20
 
   - name: "Accesstrade - Shopee ID - Komisi Xtra - KOL Tier 1"
-    url: "https://atid.me/go/Ge9YbZ4P?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 18
+    url: "https://atid.me/go/7N9UL4fD?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
+    percentage: 10
 
-  - name: "Agoda Direct - Text Link"
-    url: "https://www.agoda.com/partners/partnersearch.aspx?pcs=1&cid=1950504&hl=id-id&city=8691"
-    percentage: 6
+  - name: "Accesstrade - Shopee ID - Komisi Xtra - KOL Tier 2"
+    url: "https://atid.me/go/tyPjoXoP?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
+    percentage: 10
 
   - name: "Accesstrade - Shopee ID KOL Tier 1"
     url: "https://atid.me/0095ot002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 2
+    percentage: 3
 
-  - name: "Accesstrade - Lazada Kol"
-    url: "https://atid.me/0082ly002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 2
+  - name: "Accesstrade - Shopee ID KOL Tier 2"
+    url: "https://atid.me/002d1g002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
+    percentage: 3
+
+  - name: "Agoda Direct - Text Link"
+    url: "https://www.agoda.com/partners/partnersearch.aspx?pcs=1&cid=1950504&hl=id-id&city=8691"
+    percentage: 3
+
+  - name: "Involve - Lapak Gaming"
+    url: "https://invl.app/clmzh3h"
+    percentage: 1
+
+  - name: "Involve - Traveloka"
+    url: "https://invl.me/clmzh4l"
+    percentage: 1
 
   - name: "Ecomobi - Tiktok Shop"
     url: "https://goeco.mobi/IZ8PRcbo?sub1={campaign_id}-{spot_id}-{type_ads}-{domain}"
     percentage: 1
-
-  - name: "Involve - Lapak Gaming"
-    url: "https://invl.app/clmzh3h"
-    percentage: 6
-
-  - name: "Involve - Traveloka"
-    url: "https://invl.me/clmzh4l"
-    percentage: 3

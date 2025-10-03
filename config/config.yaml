@@ -13,7 +13,7 @@ popcash:
   postback_url: "https://ct.popcash.net/click"
 
 clickadilla:
-  postback_url: "https://tracking.clickadilla.com/in/postbacks/"
+  postback_url: "https://tracking.clickadilla.com/in/postbacks"
   token: "m96gRV"
 
 bot_filter:
@@ -51,13 +51,21 @@ products:
     url: "https://atid.me/go/tyPjoXoP?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
     percentage: 10
 
+  - name: "Lazada Direct - Recommend Bonus offer - ALP"
+    url: "https://c.lazada.co.id/t/c.cUsrdU"
+    percentage: 4
+
+  - name: "Lazada Direct - Buy at Best Price"
+    url: "https://c.lazada.co.id/t/c.cUsrd8"
+    percentage: 4
+
   - name: "Accesstrade - Shopee ID KOL Tier 1"
     url: "https://atid.me/0095ot002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 3
+    percentage: 2
 
   - name: "Accesstrade - Shopee ID KOL Tier 2"
     url: "https://atid.me/002d1g002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 3
+    percentage: 2
 
   - name: "Agoda Direct - Text Link"
     url: "https://www.agoda.com/partners/partnersearch.aspx?pcs=1&cid=1950504&hl=id-id&city=8691"
@@ -65,7 +73,7 @@ products:
 
   - name: "Involve - Lapak Gaming"
     url: "https://invl.app/clmzh3h"
-    percentage: 1
+    percentage: 2
 
   - name: "Involve - Traveloka"
     url: "https://invl.me/clmzh4l"

@@ -45,27 +45,27 @@ products:
 
   - name: "Accesstrade - Shopee ID - Komisi Xtra - KOL Tier 1"
     url: "https://atid.me/go/7N9UL4fD?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 10
+    percentage: 15
 
   - name: "Accesstrade - Shopee ID - Komisi Xtra - KOL Tier 2"
     url: "https://atid.me/go/tyPjoXoP?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 10
+    percentage: 15
 
-  - name: "Lazada Direct - Recommend Bonus offer - ALP"
-    url: "https://c.lazada.co.id/t/c.cUsrdU"
-    percentage: 4
+#  - name: "Lazada Direct - Recommend Bonus offer - ALP"
+#    url: "https://c.lazada.co.id/t/c.cUsrdU"
+#    percentage: 4
+#
+#  - name: "Lazada Direct - Buy at Best Price"
+#    url: "https://c.lazada.co.id/t/c.cUsrd8"
+#    percentage: 4
 
-  - name: "Lazada Direct - Buy at Best Price"
-    url: "https://c.lazada.co.id/t/c.cUsrd8"
-    percentage: 4
-
-  - name: "Accesstrade - Shopee ID KOL Tier 1"
-    url: "https://atid.me/0095ot002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 2
-
-  - name: "Accesstrade - Shopee ID KOL Tier 2"
-    url: "https://atid.me/002d1g002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
-    percentage: 2
+#  - name: "Accesstrade - Shopee ID KOL Tier 1"
+#    url: "https://atid.me/0095ot002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
+#    percentage: 2
+#
+#  - name: "Accesstrade - Shopee ID KOL Tier 2"
+#    url: "https://atid.me/002d1g002lt5?utm_source={campaign_id}-{spot_id}-{type_ads}-{domain}"
+#    percentage: 2
 
   - name: "Agoda Direct - Text Link"
     url: "https://www.agoda.com/partners/partnersearch.aspx?pcs=1&cid=1950504&hl=id-id&city=8691"

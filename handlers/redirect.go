@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/base64"
 	"fmt"
 	"go-redirect/geo"
 	"go-redirect/models"
@@ -94,7 +93,6 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		key := string(k)
 		val := string(v)
 		queryParams[key] = val
-
 		if key == "type_ads" {
 			switch val {
 			case models.AdTypePropeller, models.AdTypeGalaksion, models.AdTypePopcash:
@@ -137,8 +135,8 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		Extra:       extra,
 	})
 
-	// --- App Scheme detect ---
-	var appScheme string
+	// --- App Scheme / Intent detection ---
+	var appScheme, intentURL string
 
 	// Shopee (direct, accesstrade, involve, ecomobi)
 	if strings.Contains(product.URL, "s.shopee.co.id") ||
@@ -148,19 +146,28 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		(strings.Contains(product.URL, "goeco.mobi") && strings.Contains(strings.ToLower(product.Name), "shopee")) {
 
 		if isIOS {
-			// iOS → pakai universal link (langsung Shopee web redirect)
+			// iPhone → pakai universal link
 			return c.Redirect(finalURL, 302)
 		}
 		if isAndroid {
-			// Android pakai app scheme
-			navJSON := fmt.Sprintf(`{"paths":[{"webNav":{"url":"%s"}}]}`, finalURL)
-			navB64 := base64.StdEncoding.EncodeToString([]byte(navJSON))
-			appScheme = "shopeeid://home?navRoute=" + navB64
+			intentURL = fmt.Sprintf(
+				"intent://open#Intent;scheme=shopeeid;package=com.shopee.id;S.browser_fallback_url=%s;end",
+				url.QueryEscape(finalURL),
+			)
+			return c.Redirect(intentURL, 302)
 		}
 
 	} else if strings.Contains(product.URL, "c.lazada.co.id") ||
 		strings.Contains(strings.ToLower(product.Name), "lazada") {
 		appScheme = "lazada://id/web?url=" + url.QueryEscape(finalURL)
+
+	} else if strings.Contains(strings.ToLower(product.Name), "tokopedia") ||
+		strings.Contains(product.URL, "tokopedia.") {
+		appScheme = "tokopedia://home"
+
+	} else if strings.Contains(strings.ToLower(product.Name), "blibli") ||
+		strings.Contains(product.URL, "blibli.") {
+		appScheme = "blibli://home"
 
 	} else if strings.Contains(product.URL, "goeco.mobi") &&
 		strings.Contains(strings.ToLower(product.Name), "tiktok") {
@@ -173,40 +180,31 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	} else if strings.Contains(product.URL, "agoda.com") ||
 		strings.Contains(strings.ToLower(product.Name), "agoda") {
 		appScheme = "agoda://"
-
-	} else if strings.Contains(strings.ToLower(product.Name), "tokopedia") ||
-		strings.Contains(product.URL, "tokopedia.") {
-		appScheme = "tokopedia://home"
-
-	} else if strings.Contains(strings.ToLower(product.Name), "blibli") ||
-		strings.Contains(product.URL, "blibli.") {
-		appScheme = "blibli://home"
 	}
 
-	// --- Hybrid redirect ---
+	// --- HTML fallback with iframe (no React crash, auto reload if cancel) ---
 	if appScheme != "" {
 		html := fmt.Sprintf(`<!doctype html><html><head>
-			<meta name="viewport" content="width=device-width,initial-scale=1">
-			<title>Opening App...</title></head><body>
-			<script>
-			var tried = sessionStorage.getItem("retry") || "0";
-			var iframe = document.createElement('iframe');
-			iframe.style.display = 'none';
-			iframe.src = "%s";
-			document.body.appendChild(iframe);
-			
-			// fallback 1: ke web normal kalau gak kebuka
-			setTimeout(function() {
-			  if (document.hidden || document.webkitHidden) return; // user pindah app = sukses
-			  if (tried === "0") {
-				sessionStorage.setItem("retry", "1");
-				location.reload(); // coba sekali lagi
-			  } else {
-				window.location = "%s"; // fallback ke web link
-			  }
-			}, 1500);
-			</script>
-			</body></html>`, appScheme, finalURL)
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+		<title>Opening App...</title></head><body>
+		<script>
+		var tried = sessionStorage.getItem("retry") || "0";
+		var iframe = document.createElement('iframe');
+		iframe.style.display = 'none';
+		iframe.src = "%s";
+		document.body.appendChild(iframe);
+
+		setTimeout(function() {
+		  if (document.hidden || document.webkitHidden) return; // app opened
+		  if (tried === "0") {
+			sessionStorage.setItem("retry", "1");
+			location.reload();
+		  } else {
+			window.location = "%s"; // fallback ke web
+		  }
+		}, 1500);
+		</script>
+		</body></html>`, appScheme, finalURL)
 
 		c.Type("html")
 

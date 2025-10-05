@@ -72,7 +72,7 @@ func RequestLogger() fiber.Handler {
 			color = colorRed
 		}
 
-		fmt.Printf("       ↳ %sStatus: %d%s | Duration: %v\n\n",
+		fmt.Printf("       ↳ %sStatus: %d%s | Duration: %v\n",
 			color, status, colorReset, duration)
 
 		return err

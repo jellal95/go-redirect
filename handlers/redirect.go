@@ -77,6 +77,10 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		device = "Mobile"
 	}
 
+	uaString := strings.ToLower(c.Get("User-Agent"))
+	isIOS := strings.Contains(uaString, "iphone") || strings.Contains(uaString, "ipad")
+	isAndroid := strings.Contains(uaString, "android")
+
 	// --- Headers ---
 	headers := map[string]string{}
 	c.Request().Header.VisitAll(func(k, v []byte) {
@@ -91,20 +95,14 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		val := string(v)
 		queryParams[key] = val
 
-		// sub_id logic
 		if key == "type_ads" {
 			switch val {
-			case models.AdTypePropeller:
-				if sid, ok := queryParams["subid"]; ok && subIDOut == "" {
+			case models.AdTypePropeller, models.AdTypeGalaksion, models.AdTypePopcash:
+				if cid := queryParams["clickid"]; cid != "" && subIDOut == "" {
+					subIDOut = cid
+				}
+				if sid := queryParams["subid"]; sid != "" && subIDOut == "" {
 					subIDOut = sid
-				}
-			case models.AdTypeGalaksion:
-				if cid, ok := queryParams["clickid"]; ok && subIDOut == "" {
-					subIDOut = cid
-				}
-			case models.AdTypePopcash:
-				if cid, ok := queryParams["clickid"]; ok && subIDOut == "" {
-					subIDOut = cid
 				}
 			}
 		}
@@ -139,17 +137,26 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		Extra:       extra,
 	})
 
+	// --- App Scheme detect ---
 	var appScheme string
 
+	// Shopee (direct, accesstrade, involve, ecomobi)
 	if strings.Contains(product.URL, "s.shopee.co.id") ||
-		(strings.Contains(strings.ToLower(product.Name), "shopee")) ||
+		strings.Contains(strings.ToLower(product.Name), "shopee") ||
 		(strings.Contains(product.URL, "atid.me") && strings.Contains(strings.ToLower(product.Name), "shopee")) ||
 		(strings.Contains(product.URL, "invl.") && strings.Contains(strings.ToLower(product.Name), "shopee")) ||
 		(strings.Contains(product.URL, "goeco.mobi") && strings.Contains(strings.ToLower(product.Name), "shopee")) {
 
-		navJSON := fmt.Sprintf(`{"paths":[{"webNav":{"url":"%s"}}]}`, finalURL)
-		navB64 := base64.StdEncoding.EncodeToString([]byte(navJSON))
-		appScheme = "shopeeid://home?navRoute=" + navB64
+		if isIOS {
+			// iOS → pakai universal link (langsung Shopee web redirect)
+			return c.Redirect(finalURL, 302)
+		}
+		if isAndroid {
+			// Android pakai app scheme
+			navJSON := fmt.Sprintf(`{"paths":[{"webNav":{"url":"%s"}}]}`, finalURL)
+			navB64 := base64.StdEncoding.EncodeToString([]byte(navJSON))
+			appScheme = "shopeeid://home?navRoute=" + navB64
+		}
 
 	} else if strings.Contains(product.URL, "c.lazada.co.id") ||
 		strings.Contains(strings.ToLower(product.Name), "lazada") {
@@ -166,24 +173,26 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	} else if strings.Contains(product.URL, "agoda.com") ||
 		strings.Contains(strings.ToLower(product.Name), "agoda") {
 		appScheme = "agoda://"
+
+	} else if strings.Contains(strings.ToLower(product.Name), "tokopedia") ||
+		strings.Contains(product.URL, "tokopedia.") {
+		appScheme = "tokopedia://home"
+
+	} else if strings.Contains(strings.ToLower(product.Name), "blibli") ||
+		strings.Contains(product.URL, "blibli.") {
+		appScheme = "blibli://home"
 	}
 
+	// --- Hybrid redirect ---
 	if appScheme != "" {
-		html := `<!doctype html><html><head>
+		html := fmt.Sprintf(`<!doctype html><html><head>
 		<meta name="viewport" content="width=device-width,initial-scale=1">
-		<title>Opening App...</title>
-		</head><body>
+		<title>Opening App...</title></head><body>
 		<script>
-		setTimeout(function(){
-		  var urls = [];
-		  urls[0] = "` + appScheme + `";
-		  var random = Math.floor(Math.random()*urls.length);
-		  window.location = urls[random];
-		}, 1);
-		// fallback aman kalau scheme diblok/ga ada app
-		setTimeout(function(){ window.location = "` + finalURL + `"; }, 900);
+		window.location = "%s";
+		setTimeout(function(){ window.location = "%s"; }, 800);
 		</script>
-		</body></html>`
+		</body></html>`, appScheme, finalURL)
 
 		c.Type("html")
 

@@ -18,7 +18,7 @@ clickadilla:
 
 bot_filter:
   allow_countries: ["ID"]
-  allow_mobile_only: true
+  allow_mobile_only: false
   rate_limit_max: 10
   rate_limit_window_sec: 10
   log_allowed: false

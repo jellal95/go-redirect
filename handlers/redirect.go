@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"encoding/base64"
+	"fmt"
 	"go-redirect/geo"
 	"go-redirect/models"
 	"go-redirect/utils"
 	"math/rand/v2"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -135,6 +139,56 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 		Extra:       extra,
 	})
 
-	// --- Redirect ---
+	var appScheme string
+
+	if strings.Contains(product.URL, "s.shopee.co.id") ||
+		(strings.Contains(strings.ToLower(product.Name), "shopee")) ||
+		(strings.Contains(product.URL, "atid.me") && strings.Contains(strings.ToLower(product.Name), "shopee")) ||
+		(strings.Contains(product.URL, "invl.") && strings.Contains(strings.ToLower(product.Name), "shopee")) ||
+		(strings.Contains(product.URL, "goeco.mobi") && strings.Contains(strings.ToLower(product.Name), "shopee")) {
+
+		navJSON := fmt.Sprintf(`{"paths":[{"webNav":{"url":"%s"}}]}`, finalURL)
+		navB64 := base64.StdEncoding.EncodeToString([]byte(navJSON))
+		appScheme = "shopeeid://home?navRoute=" + navB64
+
+	} else if strings.Contains(product.URL, "c.lazada.co.id") ||
+		strings.Contains(strings.ToLower(product.Name), "lazada") {
+		appScheme = "lazada://id/web?url=" + url.QueryEscape(finalURL)
+
+	} else if strings.Contains(product.URL, "goeco.mobi") &&
+		strings.Contains(strings.ToLower(product.Name), "tiktok") {
+		appScheme = "tiktokshop://"
+
+	} else if strings.Contains(product.URL, "invl.") &&
+		strings.Contains(strings.ToLower(product.Name), "traveloka") {
+		appScheme = "traveloka://"
+
+	} else if strings.Contains(product.URL, "agoda.com") ||
+		strings.Contains(strings.ToLower(product.Name), "agoda") {
+		appScheme = "agoda://"
+	}
+
+	if appScheme != "" {
+		html := `<!doctype html><html><head>
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+		<title>Opening App...</title>
+		</head><body>
+		<script>
+		setTimeout(function(){
+		  var urls = [];
+		  urls[0] = "` + appScheme + `";
+		  var random = Math.floor(Math.random()*urls.length);
+		  window.location = urls[random];
+		}, 1);
+		// fallback aman kalau scheme diblok/ga ada app
+		setTimeout(function(){ window.location = "` + finalURL + `"; }, 900);
+		</script>
+		</body></html>`
+
+		c.Type("html")
+
+		return c.Status(200).SendString(html)
+	}
+
 	return c.Redirect(finalURL, 302)
 }

@@ -186,13 +186,27 @@ func doRedirect(c *fiber.Ctx, product models.Product) error {
 	// --- Hybrid redirect ---
 	if appScheme != "" {
 		html := fmt.Sprintf(`<!doctype html><html><head>
-		<meta name="viewport" content="width=device-width,initial-scale=1">
-		<title>Opening App...</title></head><body>
-		<script>
-		window.location = "%s";
-		setTimeout(function(){ window.location = "%s"; }, 800);
-		</script>
-		</body></html>`, appScheme, finalURL)
+			<meta name="viewport" content="width=device-width,initial-scale=1">
+			<title>Opening App...</title></head><body>
+			<script>
+			var tried = sessionStorage.getItem("retry") || "0";
+			var iframe = document.createElement('iframe');
+			iframe.style.display = 'none';
+			iframe.src = "%s";
+			document.body.appendChild(iframe);
+			
+			// fallback 1: ke web normal kalau gak kebuka
+			setTimeout(function() {
+			  if (document.hidden || document.webkitHidden) return; // user pindah app = sukses
+			  if (tried === "0") {
+				sessionStorage.setItem("retry", "1");
+				location.reload(); // coba sekali lagi
+			  } else {
+				window.location = "%s"; // fallback ke web link
+			  }
+			}, 1500);
+			</script>
+			</body></html>`, appScheme, finalURL)
 
 		c.Type("html")
 

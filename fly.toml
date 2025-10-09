@@ -1,32 +1,26 @@
-# fly.toml app configuration file generated for go-redirect on 2025-09-10T12:07:51+07:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
+app = "aincrad-digital-marketing"
+primary_region = "fra"
 
-app = 'aincrad-digital-marketing'
-primary_region = 'sin'
-
-[build]
-  [build.args]
-    GO_VERSION = '1.24'
+[build.args]
+  GO_VERSION = "1.24"
 
 [env]
-  PORT = '8080'
-  LOG_PATH = '/logs'
+  LOG_PATH = "/logs"
+  PORT = "8080"
 
 [http_service]
-  internal_port = 8080
-  force_https = true
-  auto_stop_machines = 'suspend'
   auto_start_machines = true
+  auto_stop_machines = "suspend"
+  force_https = true
+  internal_port = 8080
   min_machines_running = 1
-  processes = ['app']
+  processes = ["app"]
 
 [[mounts]]
-  source = 'log_volume'
-  destination = '/logs'
+  source = "log_volume"
+  destination = "/logs"
 
 [[vm]]
-  memory = '1gb'
-  cpu_kind = 'shared'
+  cpu_kind = "shared"
   cpus = 1
+  memory = "1gb"

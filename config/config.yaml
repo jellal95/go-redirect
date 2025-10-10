@@ -82,3 +82,7 @@ products:
   - name: "Ecomobi - Tiktok Shop"
     url: "https://goeco.mobi/IZ8PRcbo?sub1={spot_id}-{type_ads}-{zoneid}-{domain}"
     percentage: 1
+
+  - name: "Tokopedia Direct - Kejar Diskon"
+    url: "https://tk.tokopedia.com/ZSUhK4xP7?sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
+    percentage: 7

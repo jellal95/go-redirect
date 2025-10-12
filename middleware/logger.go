@@ -30,9 +30,9 @@ func RequestLogger() fiber.Handler {
 
 		typeAds := c.Query("type_ads")
 		subID := c.Query("subid")
-		clickID := c.Query("clickid")
+		spotID := c.Query("spot_id")
 
-		// Detect device type (simple)
+		// Detect a device type (simple)
 		device := "[DESKTOP]"
 		if strings.Contains(strings.ToLower(userAgent), "mobile") {
 			device = "[MOBILE]"
@@ -48,9 +48,9 @@ func RequestLogger() fiber.Handler {
 
 		fmt.Printf("       ↳ UA: %s\n", userAgent)
 
-		if typeAds != "" || subID != "" || clickID != "" {
-			fmt.Printf("       ↳ Ads: %s%-10s%s | subid=%s | clickid=%s\n",
-				colorCyan, typeAds, colorReset, subID, clickID)
+		if typeAds != "" || subID != "" || spotID != "" {
+			fmt.Printf("       ↳ Ads: %s%-10s%s | subid=%s | spotid=%s\n",
+				colorCyan, typeAds, colorReset, subID, spotID)
 		}
 
 		// Process

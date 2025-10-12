@@ -37,53 +37,60 @@ bot_filter:
 products:
   - name: "Shopee Direct - Anwar"
     url: "https://s.shopee.co.id/9Usmx7DPWw?sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
-    percentage: 36
+    percentage: 33
 
   - name: "Shopee Direct - Rima"
     url: "https://s.shopee.co.id/40X6O25UZO?sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
-    percentage: 24
+    percentage: 22
 
-  - name: "Accesstrade - Shopee ID - Komisi Xtra - KOL Tier 1"
-    url: "https://atid.me/go/7N9UL4fD?utm_source={spot_id}-{type_ads}-{zoneid}-{domain}"
-    percentage: 12
+  - name: "Accesstrade - Tiktok"
+    url: "https://atid.me/go/FiOFvotq?sub_id={subid}&type_ads={type_ads}&utm_source={spot_id}-{type_ads}-{zoneid}-{domain}"
+    percentage: 11
 
-  - name: "Accesstrade - Shopee ID - Komisi Xtra - KOL Tier 2"
-    url: "https://atid.me/go/tyPjoXoP?utm_source={spot_id}-{type_ads}-{zoneid}-{domain}"
-    percentage: 8
+  - name: "Accesstrade - Shopee ID - Non KOL"
+    url: "https://atid.me/002bc7002lt5?sub_id={subid}&type_ads={type_ads}&utm_source={spot_id}-{type_ads}-{zoneid}-{domain}"
+    percentage: 11
 
-  - name: "Lazada Direct - Recommend Bonus offer - ALP"
-    url: "https://c.lazada.co.id/t/c.cUsrdU?sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
-    percentage: 3
+  - name: "Accesstrade - Shopee ID - KOL Tier 1"
+    url: "https://atid.me/0095ot002lt5?sub_id={subid}&type_ads={type_ads}&utm_source={spot_id}-{type_ads}-{zoneid}-{domain}"
+    percentage: 6
 
-  - name: "Lazada Direct - Buy at Best Price"
-    url: "https://c.lazada.co.id/t/c.cUsrd8?sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
-    percentage: 3
+  - name: "Accesstrade - Shopee ID - KOL Tier 2"
+    url: "https://atid.me/002d1g002lt5?sub_id={subid}&type_ads={type_ads}&utm_source={spot_id}-{type_ads}-{zoneid}-{domain}"
+    percentage: 6
 
   - name: "Tokopedia Direct - Kejar Diskon"
     url: "https://tk.tokopedia.com/ZSUhK4xP7?sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
-    percentage: 4
+    percentage: 3
 
   - name: "Facebook - Shopee"
     url: "https://s.shopee.co.id/an_redir?origin_link=https%3A%2F%2Fshopee.co.id%2Fproduct%2F1059640472%2F28276426642%3Fgads_t_sig%3DVTJGc2RHVmtYMTlxTFVSVVRrdENkVHQ3ZkZSUTMrR3pBWmZZNzdrcnRBMy9yU1E0WDRTanRrWWlyYUZXdFh6Y1dHREFvUy9heDhQNHlkMG5WSmpGVmt1ZmVXU29VTFRFR29lNGJBaVhWTGpvUWVwblhXdlBISUJkSlljMlZuZFZFeXZ2N1JwbUtRNkkyL3loV25PYVRBPT0&sm=fb_partner&affiliate_id=11313581024"
-    percentage: 6
+    percentage: 8
 
-  - name: "Agoda Direct - Text Link"
-    url: "https://www.agoda.com/partners/partnersearch.aspx?pcs=1&cid=1950504&hl=id-id&city=8691&sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
-    percentage: 4
+#  - name: "Agoda Direct - Text Link"
+#    url: "https://www.agoda.com/partners/partnersearch.aspx?pcs=1&cid=1950504&hl=id-id&city=8691&sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
+#    percentage: 4
+
+#  - name: "Lazada Direct - Recommend Bonus offer - ALP"
+#    url: "https://c.lazada.co.id/t/c.cUsrdU?sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
+#    percentage: 3
+
+#  - name: "Lazada Direct - Buy at Best Price"
+#    url: "https://c.lazada.co.id/t/c.cUsrd8?sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
+#    percentage: 3
 
 #  - name: "Accesstrade - Shopee ID KOL Tier 1"
 #    url: "https://atid.me/0095ot002lt5?utm_source={spot_id}-{type_ads}-{zoneid}-{domain}"
 #    percentage: 2
-#
+
 #  - name: "Accesstrade - Shopee ID KOL Tier 2"
 #    url: "https://atid.me/002d1g002lt5?utm_source={spot_id}-{type_ads}-{zoneid}-{domain}"
 #    percentage: 2
 
-
 #  - name: "Involve - Lapak Gaming"
 #    url: "https://invl.app/clmzh3h?sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
 #    percentage: 2
-#
+
 #  - name: "Involve - Traveloka"
 #    url: "https://invl.me/clmzh4l?sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
 #    percentage: 1

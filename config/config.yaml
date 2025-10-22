@@ -36,7 +36,7 @@ bot_filter:
 
 products:
   - name: "Shopee Direct - Anwar"
-    url: "https://s.shopee.co.id/50QdGhpr5Y?sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
+    url: "https://s.shopee.co.id/6Acb9Cr4yx?sub_id={spot_id}-{type_ads}-{zoneid}-{domain}"
     percentage: 33
 
   - name: "Shopee Direct - Rima"
